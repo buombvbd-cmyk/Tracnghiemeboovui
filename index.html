@@ -142,7 +142,7 @@ if(!correct){
     clearInterval(timer);
     beep(1200,.12);setTimeout(()=>beep(1500,.16),120);
     let overlay=document.createElement('div');overlay.className='revealOverlay';
-    overlay.innerHTML=`<div class="revealBox"><div class="label">🎉 ĐÁP ÁN ĐÚNG 🎉</div><div class="answerText">Đáp án: ${esc(raw)}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click để sang câu tiếp theo</div></div>`;
+    overlay.innerHTML=`<div class="revealBox"><div class="label">🎉 ĐÁP ÁN ĐÚNG 🎉</div><div class="answerText">${esc(raw)}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click để sang câu tiếp theo</div></div>`;
     $('playPage').appendChild(overlay);celebrate();
     const goNext=()=>{clearTimeout(nextTimer);overlay.remove();next()};
     overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext'))goNext()};
