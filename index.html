@@ -235,7 +235,7 @@ async function createTeacherAccount(e){
   if(password!==password2){msg.textContent='❌ Hai mật khẩu không giống nhau.';msg.classList.add('err');return}
   btn.disabled=true; btn.textContent='⏳ Đang tạo tài khoản...';
   try{
-    const {data,error}=await sb.functions.invoke('create-teacher',{
+    const {data,error}=await sb.functions.invoke('swift-service',{
       body:{full_name:name,email,password}
     });
     if(error) throw error;
