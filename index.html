@@ -183,17 +183,37 @@ try{
 ctx ||= new (window.AudioContext||window.webkitAudioContext)();
 if(ctx.state==='suspended')ctx.resume();
 let now=ctx.currentTime;
-let master=ctx.createGain();master.gain.setValueAtTime(0.0001,now);master.gain.exponentialRampToValueAtTime(0.18,now+0.04);master.gain.exponentialRampToValueAtTime(0.0001,now+1.7);master.connect(ctx.destination);
-let notes=[523.25,659.25,783.99,1046.5,1318.51];
-notes.forEach((f,i)=>{
-let o=ctx.createOscillator(),g=ctx.createGain();
-o.type=i<3?'triangle':'sine';o.frequency.value=f;
-g.gain.setValueAtTime(0.0001,now+i*.18);g.gain.exponentialRampToValueAtTime(0.7,now+i*.18+.035);g.gain.exponentialRampToValueAtTime(0.0001,now+i*.18+.42);
-o.connect(g);g.connect(master);o.start(now+i*.18);o.stop(now+i*.18+.45);
+let master=ctx.createGain();
+master.gain.setValueAtTime(0.0001,now);
+master.gain.exponentialRampToValueAtTime(0.42,now+0.08);
+master.gain.setValueAtTime(0.34,now+2.8);
+master.gain.exponentialRampToValueAtTime(0.0001,now+4.8);
+master.connect(ctx.destination);
+
+// Triumphant fanfare: rising melody, harmony and sustained final chord.
+let melody=[523.25,659.25,783.99,1046.50,783.99,1046.50,1318.51,1567.98];
+melody.forEach((f,i)=>{
+  let t=now+i*.32,o=ctx.createOscillator(),g=ctx.createGain();
+  o.type=i<5?'triangle':'sawtooth';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(.62,t+.055);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.48);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+.52);
 });
-let bass=ctx.createOscillator(),bg=ctx.createGain();bass.type='sine';bass.frequency.value=130.81;
-bg.gain.setValueAtTime(0.0001,now);bg.gain.exponentialRampToValueAtTime(0.5,now+.05);bg.gain.exponentialRampToValueAtTime(.0001,now+.75);
-bass.connect(bg);bg.connect(master);bass.start(now);bass.stop(now+.8);
+// Harmony
+[261.63,329.63,392,523.25].forEach((f,i)=>{
+  let t=now+i*.65,o=ctx.createOscillator(),g=ctx.createGain();
+  o.type='sine';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.28,t+.08);g.gain.exponentialRampToValueAtTime(.0001,t+1.15);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+1.2);
+});
+// Big victory chord
+[523.25,659.25,783.99,1046.50].forEach(f=>{
+  let o=ctx.createOscillator(),g=ctx.createGain();
+  o.type='sine';o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,now+2.35);g.gain.exponentialRampToValueAtTime(.22,now+2.5);g.gain.exponentialRampToValueAtTime(.0001,now+4.5);
+  o.connect(g);g.connect(master);o.start(now+2.35);o.stop(now+4.55);
+});
 }catch(e){}
 }
 function next(){idx++;if(idx>=qs.length){finish();return}render()}
