@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiz School V2</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--p:#5b5ce2;--p2:#8b5cf6;--bg:#f5f7ff;--ink:#182033;--muted:#727b91;--line:#e7eaf3;--ok:#16a36e;--danger:#ef5968}
@@ -48,9 +49,30 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 @keyframes answerBoom{0%{transform:scale(.45) rotate(-3deg);opacity:0}70%{transform:scale(1.05) rotate(1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 @keyframes confettiFall{to{transform:translate3d(var(--dx),110vh,0) rotate(720deg);opacity:0}}
 .modeGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.modeCard{border:2px solid var(--line);border-radius:20px;padding:20px;text-align:left;background:#fff;cursor:pointer;transition:.2s;box-shadow:0 8px 25px #27315b08}.modeCard:hover{transform:translateY(-2px);border-color:#aab2ef}.modeCard.active{border-color:var(--p);background:linear-gradient(135deg,#f4f3ff,#fff);box-shadow:0 10px 30px #5b5ce220}.modeCard b{display:block;font-size:20px;margin-bottom:5px}.teamSetup{margin:14px 0 20px;padding:18px;border:1px solid #dfe3f5;border-radius:20px;background:linear-gradient(135deg,#f7f8ff,#fff)}.teamNames{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.teamNameRow{display:flex;align-items:center;gap:8px}.teamNameRow input{flex:1;padding:10px;border:1px solid #dfe3ed;border-radius:10px;background:#fff}.teamBadge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#eef0ff;font-weight:900;color:var(--p)}.teamArena{margin:-4px -4px 24px;padding:18px;border-radius:24px;background:linear-gradient(135deg,#111a4d,#26358f 52%,#5b2e9e);border:2px solid #ffffff55;box-shadow:0 16px 45px #27315b30;color:#fff;position:relative;overflow:hidden}.teamArena:before{content:"";position:absolute;inset:-80px;background:radial-gradient(circle at 15% 20%,#ffffff22,transparent 28%),radial-gradient(circle at 85% 80%,#00e5ff22,transparent 30%);pointer-events:none}.teamPickTitle{text-align:center;font-weight:1000;color:#fff;font-size:clamp(19px,2.5vw,27px);margin:2px 0 15px;letter-spacing:.3px;text-shadow:0 3px 12px #0008;position:relative}.teamPick{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;position:relative}.teamBtn{border:2px solid #ffffff55;background:linear-gradient(135deg,#ffffff18,#ffffff08);color:#fff;border-radius:16px;padding:13px 12px;font-weight:950;cursor:pointer;transition:.2s;box-shadow:0 8px 20px #0002;backdrop-filter:blur(8px)}.teamBtn:hover{transform:translateY(-3px) scale(1.02);border-color:#fff;background:#ffffff22}.teamBtn.active{border-color:#ffe36b;background:linear-gradient(135deg,#ffe36b,#ff9f43);color:#301b00;box-shadow:0 0 0 3px #ffe36b33,0 10px 28px #ffb00055;transform:translateY(-2px) scale(1.03)}.teamBoard{margin-top:16px;background:#ffffff12;border:1px solid #ffffff30;border-radius:18px;padding:12px;position:relative;backdrop-filter:blur(8px)}.teamBoard h3{text-align:center;margin:2px 0 10px;color:#ffe36b;font-size:18px;text-shadow:0 2px 8px #0008}.teamRank{display:grid;grid-template-columns:42px 1fr 90px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid #ffffff18;font-weight:900;border-radius:10px}.teamRank:first-of-type{background:linear-gradient(90deg,#ffd84d2b,transparent)}.teamRank:last-child{border-bottom:0}.teamScore{font-size:21px;color:#ffe36b;text-align:right}.teamCorrectFlash{font-size:28px;font-weight:950;color:var(--ok);margin:6px 0 14px}.teamWrongFlash{font-size:28px;font-weight:950;color:var(--danger);margin:6px 0 14px}.teamNote{font-size:14px;color:#e9edff;font-weight:800;margin-top:10px;text-align:center}.quiz.dynamicTheme{border:3px solid color-mix(in srgb,var(--t1) 35%,#fff);background:linear-gradient(145deg,#ffffff,#f8f9ff);box-shadow:0 25px 75px color-mix(in srgb,var(--t1) 18%,transparent);overflow:hidden;position:relative}.quiz.dynamicTheme:after{content:"";position:absolute;left:-10%;right:-10%;top:0;height:7px;background:linear-gradient(90deg,var(--t1),var(--t2),#ffd166,var(--t1));background-size:250% 100%;animation:quizShine 4s linear infinite}.quiz.dynamicTheme .qmeta{font-size:16px;margin-bottom:8px}.quiz.dynamicTheme .qmeta span:first-child{font-size:18px;box-shadow:0 6px 18px color-mix(in srgb,var(--t1) 16%,transparent)}.quiz.dynamicTheme .question{font-size:clamp(30px,4.2vw,54px);max-width:980px;margin:26px auto 30px;padding:22px 28px;border-radius:24px;background:linear-gradient(135deg,#fff,#f4f5ff);box-shadow:0 12px 35px #27315b12;border:2px solid color-mix(in srgb,var(--t1) 16%,#fff);letter-spacing:-.5px}.quiz.dynamicTheme .answers{gap:18px;margin-top:10px}.quiz.dynamicTheme .answer{min-height:96px;padding:18px 22px;border-width:3px;border-radius:22px;font-size:clamp(18px,2vw,23px);display:flex;align-items:center;box-shadow:0 12px 28px #27315b12}.quiz.dynamicTheme .answer:nth-child(1){--ac:#ef476f}.quiz.dynamicTheme .answer:nth-child(2){--ac:#118ab2}.quiz.dynamicTheme .answer:nth-child(3){--ac:#f4a300}.quiz.dynamicTheme .answer:nth-child(4){--ac:#16a36e}.quiz.dynamicTheme .answer{border-color:color-mix(in srgb,var(--ac) 48%,#fff);background:linear-gradient(135deg,#fff,color-mix(in srgb,var(--ac) 10%,#fff))}.quiz.dynamicTheme .answer:hover{border-color:var(--ac);box-shadow:0 18px 38px color-mix(in srgb,var(--ac) 20%,transparent);transform:translateY(-5px) scale(1.01)}.quiz.dynamicTheme .letter{flex:0 0 48px;width:48px;height:48px;margin-right:14px;background:var(--ac);box-shadow:0 7px 16px color-mix(in srgb,var(--ac) 30%,transparent);font-size:21px;font-weight:1000}.quiz.dynamicTheme .answer.correct{border-color:#16a36e;background:linear-gradient(135deg,#eafff4,#caffdf);box-shadow:0 0 0 4px #16a36e22,0 18px 40px #16a36e30}.quiz.dynamicTheme .answer.wrong{border-color:#ef5968;background:linear-gradient(135deg,#fff1f3,#ffdfe4)}.quiz.dynamicTheme .qimage{box-shadow:0 15px 40px #27315b22;border:4px solid #fff}.revealBox{border:4px solid #ffffff55;background:linear-gradient(145deg,#fff,#f4fff8);box-shadow:0 0 0 8px #ffffff18,0 30px 110px #000b}.revealBox .answerText{color:#17233f}.revealBox .bigLetter{background:linear-gradient(135deg,#16a36e,#36d47d);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}@keyframes quizShine{to{background-position:250% 0}}@media(max-width:850px){.sets,.setup{grid-template-columns:1fr}.setup>div{min-width:0}.card{padding:20px}.answers,.settings{grid-template-columns:1fr}.row{grid-template-columns:40px 1fr 80px}.row .del{display:none}.modeGrid,.teamNames{grid-template-columns:1fr}}@media(max-width:560px){nav{padding:0 14px}.logo{font-size:18px}.navBtns .soft{display:none}.hero h1{font-size:36px}.container{padding:22px 14px}.quiz{padding:20px}.question{font-size:30px}}
+
+/* ===== SUPABASE LOGIN ===== */
+#app{display:none}
+#authGate{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 10%,#e9e7ff,transparent 35%),radial-gradient(circle at 85% 85%,#dff8ff,transparent 35%),linear-gradient(135deg,#f7f8ff,#eef2ff)}
+.authCard{width:min(460px,94vw);background:#fff;border:1px solid #e2e5f2;border-radius:28px;padding:34px;box-shadow:0 25px 80px #27315b20;text-align:center}
+.authLogo{font-size:58px;margin-bottom:6px}.authCard h1{margin:0 0 8px;font-size:32px}.authCard p{color:var(--muted);margin:0 0 24px}.authField{text-align:left;margin:13px 0}.authField label{display:block;font-weight:850;margin-bottom:7px}.authField input{width:100%;padding:13px 14px;border:1px solid #dfe3ed;border-radius:12px;outline:none}.authField input:focus{border-color:var(--p);box-shadow:0 0 0 4px #5b5ce218}.authSubmit{width:100%;margin-top:8px;padding:13px 18px;font-size:17px}.authMsg{min-height:24px;margin-top:14px;font-weight:800;color:var(--danger)}.authFoot{margin-top:22px;font-size:12px;color:#8a91a5}.userBadge{display:inline-flex;align-items:center;gap:7px;background:#f0f1ff;color:var(--p);padding:8px 12px;border-radius:999px;font-weight:850;font-size:13px}.logoutBtn{background:#fff0f2;color:#c73546}
+@media(max-width:560px){.authCard{padding:26px 20px}}
 </style>
 </head>
 <body>
+<div id="authGate">
+  <div class="authCard">
+    <div class="authLogo">🎯</div>
+    <h1>Quiz School V2</h1>
+    <p>Đăng nhập tài khoản để sử dụng hệ thống.</p>
+    <form id="loginForm">
+      <div class="authField"><label for="loginEmail">📧 Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="Nhập email" required></div>
+      <div class="authField"><label for="loginPassword">🔒 Mật khẩu</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required></div>
+      <button id="loginBtn" class="btn primary authSubmit" type="submit">🔐 Đăng nhập</button>
+      <div id="authMsg" class="authMsg"></div>
+    </form>
+    <div class="authFoot">Tài khoản do quản trị viên cấp.</div>
+  </div>
+</div>
 <div id="app">
 <nav><div class="logo"><i>🎯</i> Quiz School</div><div class="navBtns"><button class="btn soft" onclick="home()">Trang chủ</button><button class="btn primary" onclick="openTeacher()">👨‍🏫 Giáo viên</button></div></nav>
 <div id="homePage" class="container">
@@ -101,6 +123,70 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 <div class="playbar"><button class="btn soft" onclick="home()">🏠</button><div class="pill" id="count">Câu</div><div class="pill timer" id="clock">∞</div><button class="btn soft" id="mute">🔊</button></div><div class="progress"><div id="bar"></div></div><section class="quiz" id="quiz"></section>
 </div>
 <script>
+
+// ===== SUPABASE AUTH - QUIZ SCHOOL V2 =====
+const SUPABASE_URL = 'https://ssurmnldxfbxbcoclyey.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__CIEoUBwTfUEczwBmRdoRg_hMBaU_fo';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentProfile = null;
+
+async function showLoggedIn(user){
+  const {data: profile, error} = await sb.from('profiles').select('id,full_name,role').eq('id', user.id).maybeSingle();
+  if(error || !profile){
+    await sb.auth.signOut();
+    $('authMsg').textContent='Tài khoản chưa được cấp quyền sử dụng hệ thống.';
+    return;
+  }
+  currentProfile = profile;
+  $('authGate').style.display='none';
+  $('app').style.display='block';
+  const navBtns = document.querySelector('.navBtns');
+  if(navBtns && !document.getElementById('userBadge')){
+    const badge=document.createElement('span');
+    badge.id='userBadge'; badge.className='userBadge';
+    badge.textContent=(profile.role==='admin'?'👑 ADMIN':'👨‍🏫 GIÁO VIÊN');
+    navBtns.prepend(badge);
+    const out=document.createElement('button');
+    out.id='logoutBtn'; out.className='btn logoutBtn'; out.textContent='Đăng xuất';
+    out.onclick=logoutQuiz;
+    navBtns.appendChild(out);
+  }
+}
+async function logoutQuiz(){
+  await sb.auth.signOut();
+  location.reload();
+}
+async function initQuizAuth(){
+  const {data:{session}} = await sb.auth.getSession();
+  if(session?.user){
+    await showLoggedIn(session.user);
+  }else{
+    $('authGate').style.display='grid';
+    $('app').style.display='none';
+  }
+  sb.auth.onAuthStateChange(async (event, session)=>{
+    if(event==='SIGNED_IN' && session?.user) await showLoggedIn(session.user);
+    if(event==='SIGNED_OUT') location.reload();
+  });
+}
+document.getElementById('loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const btn=$('loginBtn'), msg=$('authMsg');
+  btn.disabled=true; btn.textContent='⏳ Đang đăng nhập...'; msg.textContent='';
+  const {data,error}=await sb.auth.signInWithPassword({
+    email:$('loginEmail').value.trim(),
+    password:$('loginPassword').value
+  });
+  if(error){
+    msg.textContent='❌ Email hoặc mật khẩu không đúng.';
+    btn.disabled=false; btn.textContent='🔐 Đăng nhập';
+    return;
+  }
+  await showLoggedIn(data.user);
+  btn.disabled=false; btn.textContent='🔐 Đăng nhập';
+});
+initQuizAuth();
+
 let sets=JSON.parse(localStorage.getItem('quizSchoolSets')||'[]'),current=null,qs=[],idx=0,settings={},revealed=false,left=0,timer=null,ctx=null,audio=true,nextTimer=null,teamList=[],teamScores={},teamTurn=null,teamPointValue=10;
 const $=x=>document.getElementById(x),shuffle=a=>[...a].sort(()=>Math.random()-.5);
 function home(){$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('homePage').classList.remove('hidden');renderSets()}
