@@ -85,7 +85,7 @@ $('count').textContent=`Câu ${idx+1}/${qs.length}`;$('bar').style.width=(idx/qs
 showQuestion();
 }
 function showQuestion(){
-if(revealed||document.querySelector('.answers'))return;
+if(revealed)return;
 let x=qs[idx],count=Number(settings.answerCount||4),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:x.ans==='ABCD'[n]})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
