@@ -444,7 +444,14 @@ const correctIndex=getCorrectAnswerIndex(qs[idx]);
 const correctLetter=correctIndex>=0?'ABCD'[correctIndex]:'';
 const answerMatches=b=>{
   if(!b)return false;
-  return String(b.dataset.letter||'').trim().toUpperCase()===correctLetter;
+  const letter=String(b.dataset.letter||'').trim().toUpperCase();
+  const clickedIndex='ABCD'.indexOf(letter);
+  if(correctIndex>=0 && clickedIndex===correctIndex)return true;
+  const clean=s=>String(s??'').normalize('NFKC').trim().toUpperCase();
+  const loose=s=>clean(s).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/đ/g,'d').replace(/[^A-Z0-9]+/g,'');
+  const optionText=clickedIndex>=0?String(qs[idx]?.opts?.[clickedIndex]??'').trim():'';
+  const answerText=answerSpec.text||rawAnswer;
+  return !!optionText && (clean(optionText)===clean(answerText)||loose(optionText)===loose(answerText)||clean(optionText)===clean(rawAnswer)||loose(optionText)===loose(rawAnswer));
 };
 let correct=[...document.querySelectorAll('.answer')].find(answerMatches);
 if(!correct){
@@ -465,7 +472,7 @@ if(!correct){
 }
 document.querySelectorAll('.answer').forEach(b=>{if(b===correct){b.classList.add('correct');}else{b.classList.add('wrong','revealedWrong');}});
 correct.classList.add('correct');
-let chosenIsCorrect=!!chosen && (chosen===correct || chosen.dataset.correct==='true' || answerMatches(chosen));
+let chosenIsCorrect=!!chosen && answerMatches(chosen);
 if(chosen && !chosenIsCorrect) chosen.classList.add('wrong');
 let isWrong=!!chosen && !chosenIsCorrect;
 if(isWrong){
