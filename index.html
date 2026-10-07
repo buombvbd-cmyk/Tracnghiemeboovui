@@ -167,7 +167,7 @@ if(!correct){
 }
 document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add('wrong');});
 correct.classList.add('correct');
-let chosenIsCorrect=!!chosen && answerMatches(chosen);
+let chosenIsCorrect=!!chosen && (chosen===correct || chosen.dataset.correct==='true' || answerMatches(chosen));
 if(chosen && !chosenIsCorrect) chosen.classList.add('wrong');
 let isWrong=!!chosen && !chosenIsCorrect;
 if(isWrong){
