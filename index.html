@@ -162,7 +162,26 @@ overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext'))goNe
 $('next')?.classList.remove('hidden');if($('next'))$('next').onclick=goNext;
 }
 function celebrate(){
-for(let i=0;i<70;i++){let s=document.createElement('i');s.className='confetti';s.style.left=(Math.random()*100)+'vw';s.style.setProperty('--dx',((Math.random()-.5)*240)+'px');s.style.animationDelay=(Math.random()*.25)+'s';s.style.transform='rotate('+Math.random()*360+'deg)';s.style.background='hsl('+Math.random()*360+' 90% 55%)';document.body.appendChild(s);setTimeout(()=>s.remove(),1900)}
+for(let i=0;i<90;i++){let s=document.createElement('i');s.className='confetti';s.style.left=(Math.random()*100)+'vw';s.style.setProperty('--dx',((Math.random()-.5)*300)+'px');s.style.animationDelay=(Math.random()*.3)+'s';s.style.transform='rotate('+Math.random()*360+'deg)';s.style.background='hsl('+Math.random()*360+' 90% 55%)';document.body.appendChild(s);setTimeout(()=>s.remove(),2000)}
+if(audio&&settings.sound!=='off') victoryFanfare();
+}
+function victoryFanfare(){
+try{
+ctx ||= new (window.AudioContext||window.webkitAudioContext)();
+if(ctx.state==='suspended')ctx.resume();
+let now=ctx.currentTime;
+let master=ctx.createGain();master.gain.setValueAtTime(0.0001,now);master.gain.exponentialRampToValueAtTime(0.18,now+0.04);master.gain.exponentialRampToValueAtTime(0.0001,now+1.7);master.connect(ctx.destination);
+let notes=[523.25,659.25,783.99,1046.5,1318.51];
+notes.forEach((f,i)=>{
+let o=ctx.createOscillator(),g=ctx.createGain();
+o.type=i<3?'triangle':'sine';o.frequency.value=f;
+g.gain.setValueAtTime(0.0001,now+i*.18);g.gain.exponentialRampToValueAtTime(0.7,now+i*.18+.035);g.gain.exponentialRampToValueAtTime(0.0001,now+i*.18+.42);
+o.connect(g);g.connect(master);o.start(now+i*.18);o.stop(now+i*.18+.45);
+});
+let bass=ctx.createOscillator(),bg=ctx.createGain();bass.type='sine';bass.frequency.value=130.81;
+bg.gain.setValueAtTime(0.0001,now);bg.gain.exponentialRampToValueAtTime(0.5,now+.05);bg.gain.exponentialRampToValueAtTime(.0001,now+.75);
+bass.connect(bg);bg.connect(master);bass.start(now);bass.stop(now+.8);
+}catch(e){}
 }
 function next(){idx++;if(idx>=qs.length){finish();return}render()}
 function finish(){clearInterval(timer);$('count').textContent='Hoàn thành';$('clock').textContent='🏆';$('bar').style.width='100%';$('quiz').innerHTML=`<div class="result"><div style="font-size:75px">🏆</div><h1>Hoàn thành!</h1><div class="score">${qs.length}</div><p class="muted">câu hỏi đã trình chiếu</p><button class="btn primary" onclick="home()">🏠 Về kho câu hỏi</button></div>`}
