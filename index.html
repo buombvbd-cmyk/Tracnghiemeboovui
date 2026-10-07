@@ -272,7 +272,7 @@ initQuizAuth();
 
 let sets=JSON.parse(localStorage.getItem('quizSchoolSets')||'[]'),current=null,qs=[],idx=0,settings={},revealed=false,left=0,timer=null,ctx=null,audio=true,nextTimer=null,teamList=[],teamScores={},teamTurn=null,teamPointValue=10;
 const $=x=>document.getElementById(x),shuffle=a=>[...a].sort(()=>Math.random()-.5);
-function home(){$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('homePage').classList.remove('hidden');renderSets()}
+function home(){$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage')?.classList.add('hidden');$('homePage').classList.remove('hidden');renderSets()}
 
 function setGameType(type){$('individualModeCard').classList.toggle('active',type==='individual');$('teamModeCard').classList.toggle('active',type==='team');$('teamSetup').classList.toggle('hidden',type!=='team');if(type==='team')renderTeamInputs()}
 function initTeamInputs(){let sel=$('teamCount');if(!sel)return;sel.innerHTML=Array.from({length:9},(_,i)=>'<option value="'+(i+2)+'">'+(i+2)+' đội</option>').join('');sel.value='4';sel.onchange=renderTeamInputs;renderTeamInputs()}
