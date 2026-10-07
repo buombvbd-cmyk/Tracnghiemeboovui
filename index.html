@@ -68,11 +68,11 @@ function home(){$('teacherPage').classList.add('hidden');$('playPage').classList
 function openTeacher(){ $('homePage').classList.add('hidden');$('playPage').classList.add('hidden');$('teacherPage').classList.remove('hidden'); if(!qs.length){}}
 function renderSets(){let el=$('sets');if(!sets.length){el.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center;padding:45px">📚<h2>Chưa có bộ câu hỏi</h2><p class="muted">Hãy tạo bộ đầu tiên trong khu vực giáo viên.</p></div>';return}el.innerHTML=sets.map((s,n)=>`<article class="set"><div class="setIcon">${['🌟','🚀','🧠','🏆','📖'][n%5]}</div><h3>${esc(s.name)}</h3><div class="meta">${s.questions.length} câu hỏi<br>Thời gian: ${s.settings.time==0?'Không giới hạn':s.settings.time+' giây'}<br>Âm thanh: ${s.settings.sound==='off'?'Tắt':'Bật'}<br>Đáp án: A–${'ABCD'[(Number(s.settings.answerCount||4))-1]}</div><div class="setActions"><button class="btn primary" onclick="playSet(${n})">▶ Chơi</button><button class="btn soft" onclick="editSet(${n})">⚙ Sửa</button><button class="btn danger del" onclick="delSet(${n})">Xóa</button></div></article>`).join('')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-$('excel').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=z=>{try{let wb=XLSX.read(z.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});qs=rows.map(r=>({q:String(r['Câu hỏi']||r['Cau hoi']||r.Question||''),img:String(r['Hình ảnh câu hỏi']||r['Hinh anh cau hoi']||r.Image||''),opts:['A','B','C','D'].map(k=>String(r[k]||'')),ans:String(r['Đáp án đúng']||r['Dap an dung']||r.Answer||'').toUpperCase().trim()})).filter(x=>x.q||x.img);$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=`✅ Đã nhập ${qs.length} câu từ ${f.name}`;preview()}catch(e){$('importStatus').textContent='❌ Không đọc được file'}};r.readAsArrayBuffer(f)}
+$('excel').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=z=>{try{let wb=XLSX.read(z.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});qs=rows.map(r=>({q:String(r['Câu hỏi']||r['Cau hoi']||r.Question||''),img:String(r['Hình ảnh câu hỏi']||r['Hinh anh cau hoi']||r.Image||''),opts:['A','B','C','D'].map(k=>String(r[k]||'')),ans:String(r['Đáp án đúng']??r['Dap an dung']??r.Answer??'').trim()})).filter(x=>x.q||x.img);$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=`✅ Đã nhập ${qs.length} câu từ ${f.name}`;preview()}catch(e){$('importStatus').textContent='❌ Không đọc được file'}};r.readAsArrayBuffer(f)}
 function preview(){$('preview').innerHTML=qs.length?'<h3>👀 Xem trước</h3>'+qs.slice(0,8).map((q,n)=>`<div class="row"><b>${n+1}</b><span>${esc(q.q||'[Câu hỏi hình ảnh]')}</span><span>Đúng: <b>${esc(q.ans)}</b></span><span class="del">${q.img?'🖼️ Hình':''}</span></div>`).join('')+(qs.length>8?`<p class="muted">... và ${qs.length-8} câu khác</p>`:''):''}
 $('time').onchange=()=>$('custom').classList.toggle('hidden',$('time').value!=='custom');
 function getSettings(){return{time:$('time').value==='custom'?Number($('custom').value):Number($('time').value),sound:$('sound').value,timeout:$('timeout').value,shuffleQ:$('shuffleQ').value,shuffleA:$('shuffleA').value,full:$('full').value,answerCount:Number($('answerCount').value),mode:$('mode').value}}
-function saveSet(){if(!qs.length){alert('Hãy nhập Excel trước.');return}let st=getSettings(),maxAns=st.answerCount;if(qs.some(q=>q.ans && 'ABCD'.indexOf(q.ans)>=maxAns)){alert('Có câu có đáp án đúng nằm ngoài số lượng đáp án đã chọn. Hãy chọn nhiều đáp án hơn hoặc sửa cột “Đáp án đúng” trong Excel.');return}current={name:$('setName').value||'Bộ câu hỏi',questions:qs,settings:st};let found=sets.findIndex(s=>s.id===current.id);if(found<0){current.id=Date.now();sets.push(current)}else sets[found]=current;localStorage.setItem('quizSchoolSets',JSON.stringify(sets));alert('Đã lưu bộ câu hỏi.');home()}
+function saveSet(){if(!qs.length){alert('Hãy nhập Excel trước.');return}let st=getSettings(),maxAns=st.answerCount;if(qs.some(q=>{let a=String(q.ans||'').trim().toUpperCase();return /^[ABCD]$/.test(a)&&'ABCD'.indexOf(a)>=maxAns})){alert('Có câu có đáp án đúng nằm ngoài số lượng đáp án đã chọn. Hãy chọn nhiều đáp án hơn hoặc sửa cột “Đáp án đúng” trong Excel.');return}current={name:$('setName').value||'Bộ câu hỏi',questions:qs,settings:st};let found=sets.findIndex(s=>s.id===current.id);if(found<0){current.id=Date.now();sets.push(current)}else sets[found]=current;localStorage.setItem('quizSchoolSets',JSON.stringify(sets));alert('Đã lưu bộ câu hỏi.');home()}
 function editSet(n){current=sets[n];qs=current.questions;openTeacher();$('setName').value=current.name;$('time').value=current.settings.time;$('sound').value=current.settings.sound;$('timeout').value=current.settings.timeout;$('shuffleQ').value=current.settings.shuffleQ;$('shuffleA').value=current.settings.shuffleA;$('full').value=current.settings.full;$('answerCount').value=String(current.settings.answerCount||4);$('mode').value=current.settings.mode||'click';preview()}
 function delSet(n){if(confirm('Xóa bộ câu hỏi này?')){sets.splice(n,1);localStorage.setItem('quizSchoolSets',JSON.stringify(sets));renderSets()}}
 function playSet(n){current=sets[n];qs=current.questions.map(x=>({...x}));settings={...current.settings,answerCount:Number(current.settings.answerCount||4)};if(settings.shuffleQ==='yes')qs=shuffle(qs);idx=0;openPlay();render()}
@@ -86,7 +86,7 @@ showQuestion();
 }
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:String(x.ans||'').trim().toUpperCase()==='ABCD'[n]})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:(/^[ABCD]$/.test(answerNorm)&&answerNorm==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
 if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
@@ -110,9 +110,19 @@ function reveal(){
 if(revealed)return;revealed=true;clearInterval(timer);
 let correct=document.querySelector('.answer[data-correct="true"]');
 if(!correct){
-  clearInterval(timer);
-  alert('Không tìm thấy đáp án đúng trong dữ liệu câu hỏi. Hãy kiểm tra cột “Đáp án đúng” trong file Excel.');
-  return;
+  let raw=String(qs[idx]?.ans??'').trim();
+  if(raw){
+    clearInterval(timer);
+    beep(1200,.12);setTimeout(()=>beep(1500,.16),120);
+    let overlay=document.createElement('div');overlay.className='revealOverlay';
+    overlay.innerHTML=`<div class="revealBox"><div class="label">🎉 ĐÁP ÁN ĐÚNG 🎉</div><div class="answerText">${esc(raw)}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click để sang câu tiếp theo</div></div>`;
+    $('playPage').appendChild(overlay);celebrate();
+    const goNext=()=>{clearTimeout(nextTimer);overlay.remove();next()};
+    overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext'))goNext()};
+    $('next')?.classList.remove('hidden');if($('next'))$('next').onclick=goNext;
+    return;
+  }
+  clearInterval(timer);alert('Cột “Đáp án đúng” đang trống trong file Excel.');return;
 }
 document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add('wrong');});
 correct.classList.add('correct');
