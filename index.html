@@ -80,14 +80,8 @@ function startCurrent(){if(!qs.length){alert('Hãy nhập Excel trước.');retu
 function openPlay(){$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('playPage').classList.remove('hidden');if(settings.full==='yes')document.documentElement.requestFullscreen?.().catch(()=>{})}
 function beep(f=800,d=.06){if(!audio||settings.sound==='off')return;try{ctx ||= new (window.AudioContext||window.webkitAudioContext)();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d)}catch(e){}}
 function render(){
-clearInterval(timer);revealed=false;left=0;let x=qs[idx];
+clearInterval(timer);revealed=false;left=0;
 $('count').textContent=`Câu ${idx+1}/${qs.length}`;$('bar').style.width=(idx/qs.length*100)+'%';
-if(settings.mode==='click'){
-  $('clock').textContent='∞';$('clock').className='pill timer';
-  $('quiz').innerHTML=`<div class="clickStart" id="clickStart"><div><div class="startIcon">👆</div><h1>CLICK ĐỂ HIỆN CÂU HỎI</h1><p>Câu ${idx+1} / ${qs.length}<br>Click lần 2 để hiện đáp án đúng</p></div></div>`;
-  $('clickStart').onclick=()=>showQuestion();
-  return;
-}
 showQuestion();
 }
 function showQuestion(){
@@ -104,7 +98,7 @@ if(settings.mode!=='click'){
 if(settings.mode==='click'){
   $('quiz').onclick=e=>{
     if(e.target.closest('#next'))return;
-    if(!revealed)reveal();
+    if(!revealed) reveal();
     else next();
   };
 }
