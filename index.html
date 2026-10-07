@@ -341,10 +341,9 @@ function getAnswerSpec(x){
 const raw=String(x?.ans??'').trim();
 const opts=Array.isArray(x?.opts)?x.opts.map(v=>String(v??'').trim()):[];
 let code='',text=raw;
-const norm=s=>String(s??'').trim().replace(/\\s+/g,' ').toUpperCase();
-const stripLetter=s=>norm(s).replace(/^[ABCD]\\s*[:.)-]\\s*/,'');
-// Nguồn đáp án duy nhất là cột "Đáp án đúng".
-const m=raw.match(/^([ABCD])\\s*[:.)-]\\s*(.+)$/i);
+const norm=s=>String(s??'').trim().replace(/\s+/g,' ').toUpperCase();
+const stripLetter=s=>norm(s).replace(/^[ABCD]\s*[:.)-]\s*/,'');
+const m=raw.match(/^([ABCD])\s*[:.)-]\s*(.+)$/i);
 if(m){code=m[1].toUpperCase();text=m[2].trim();}
 else if(/^[ABCD]$/i.test(raw)){code=raw.toUpperCase();text='';}
 if(text){
