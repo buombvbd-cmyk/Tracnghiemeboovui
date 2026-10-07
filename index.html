@@ -96,10 +96,10 @@ if(settings.mode!=='click'){
   document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(!revealed){document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)}else next()});
 }
 if(settings.mode==='click'){
-  $('quiz').onclick=e=>{
-    if(e.target.closest('#next'))return;
+  $('playPage').onclick=e=>{
+    if(e.target.closest('.revealOverlay')) return;
+    if(e.target.closest('#next')) return;
     if(!revealed) reveal();
-    else next();
   };
 }
 startTimer();
