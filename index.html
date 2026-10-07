@@ -71,7 +71,7 @@ function reveal(){if(revealed)return;revealed=true;clearInterval(timer);document
 function next(){idx++;if(idx>=qs.length){finish();return}render()}
 function finish(){clearInterval(timer);$('count').textContent='Hoàn thành';$('clock').textContent='🏆';$('bar').style.width='100%';$('quiz').innerHTML=`<div class="result"><div style="font-size:75px">🏆</div><h1>Hoàn thành!</h1><div class="score">${qs.length}</div><p class="muted">câu hỏi đã trình chiếu</p><button class="btn primary" onclick="home()">🏠 Về kho câu hỏi</button></div>`}
 $('mute').onclick=()=>{audio=!audio;$('mute').textContent=audio?'🔊':'🔇'}
-function template(){let d=[['STT','Câu hỏi','Hình ảnh câu hỏi','A','B','C','D','Đáp án đúng'],[1,'Thủ đô Việt Nam là gì?','','Hà Nội','Huế','Đà Nẵng','TP.HCM','A'],[2,'2 + 2 bằng bao nhiêu?','','3','4','5','6','B']];let ws=XLSX.utils.aoa_to_sheet(d),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'CauHoi');XLSX.writeFile(wb,'Quiz_School_Mau.xlsx')}
+function template(){let count=Number($('answerCount').value||4),letters='ABCD'.slice(0,count).split(''),headers=['STT','Câu hỏi','Hình ảnh câu hỏi',...letters,'Đáp án đúng'];let sampleOpts={A:'Hà Nội',B:'Huế',C:'Đà Nẵng',D:'TP.HCM'},row=[1,'Thủ đô Việt Nam là gì?','',...letters.map(x=>sampleOpts[x]),'A'],row2=[2,'2 + 2 bằng bao nhiêu?','',...letters.map(x=>String({A:'3',B:'4',C:'5',D:'6'}[x]||'')),'B'];let ws=XLSX.utils.aoa_to_sheet([headers,row,row2]),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'CauHoi');XLSX.writeFile(wb,'Quiz_School_Mau_'+count+'_dap_an.xlsx')}
 renderSets();
 </script>
 </body></html>
