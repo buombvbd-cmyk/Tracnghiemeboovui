@@ -155,7 +155,7 @@ document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add(
 correct.classList.add('correct');
 beep(1200,.12);setTimeout(()=>beep(1500,.16),120);
 let overlay=document.createElement('div');overlay.className='revealOverlay';
-overlay.innerHTML=`<div class="revealBox"><div class="label">🎉 ĐÁP ÁN ĐÚNG 🎉</div><div class="bigLetter">${correct.dataset.letter}</div><div class="answerText">${correct.dataset.letter}: ${correct.dataset.text}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click vào màn hình hoặc nút để sang câu tiếp theo</div></div>`;
+overlay.innerHTML=`<div class="revealBox"><div class="label">🎉 ĐÁP ÁN ĐÚNG 🎉</div><div class="bigLetter">${correct.dataset.letter}</div><div class="answerText">${correct.dataset.text}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click vào màn hình hoặc nút để sang câu tiếp theo</div></div>`;
 $('playPage').appendChild(overlay);celebrate();
 const goNext=()=>{clearTimeout(nextTimer);overlay.remove();next()};
 overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext'))goNext()};
