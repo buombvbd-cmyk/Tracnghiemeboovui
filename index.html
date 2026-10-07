@@ -113,7 +113,7 @@ function initTeamGame(){teamList=(settings.teamNames||[]).slice(0,Number(setting
 function teamRankRows(){return [...teamList].sort((a,b)=>(teamScores[b.id]||0)-(teamScores[a.id]||0)||Number(a.id)-Number(b.id)).map((t,i)=>'<div class="teamRank"><span>'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1))+'</span><span>'+esc(t.name)+'</span><span class="teamScore">'+(teamScores[t.id]||0)+'</span></div>').join('')}
 function renderTeamControls(){let a=$('teamArena');if(!a||settings.gameType!=='team')return;a.innerHTML='<div class="teamPickTitle">🎯 CHỌN ĐỘI ĐƯỢC QUYỀN TRẢ LỜI</div><div class="teamPick">'+teamList.map(t=>'<button type="button" class="teamBtn '+(teamTurn===t.id?'active':'')+'" data-team-id="'+t.id+'">'+esc(t.name)+'</button>').join('')+'</div><div class="teamNote">'+(teamTurn===null?'Hãy chọn một đội trước khi trả lời.':'Đang trả lời: <b>'+esc(teamList.find(t=>t.id===teamTurn)?.name||'')+'</b>')+'</div><div class="teamBoard"><h3>🏆 BẢNG XẾP HẠNG</h3>'+teamRankRows()+'</div>';a.querySelectorAll('.teamBtn').forEach(b=>b.onclick=()=>selectTeam(b.dataset.teamId));document.querySelectorAll('.answer').forEach(b=>b.disabled=teamTurn===null)}
 function selectTeam(id){if(settings.gameType!=='team'||revealed)return;teamTurn=String(id);document.querySelectorAll('.answer').forEach(b=>{b.disabled=false;b.classList.remove('selected')});renderTeamControls()}
-function teamWrong(chosen){let name=teamList.find(t=>t.id===teamTurn)?.name||'Đội';beep(220,.18);setTimeout(()=>beep(160,.22),120);document.querySelectorAll('.answer').forEach(b=>b.classList.remove('selected'));chosen.classList.add('wrong');let overlay=document.createElement('div');overlay.className='revealOverlay';overlay.innerHTML='<div class="revealBox"><div class="label">❌ CHƯA ĐÚNG</div><div class="teamWrongFlash">Đội '+esc(name)+' chưa chính xác!</div><div class="answerText" style="font-size:28px">Câu hỏi vẫn còn hiệu lực.</div><button id="overlayContinue" class="btn primary" style="font-size:20px;padding:14px 24px">🎯 Chọn đội khác</button><div class="hint">Đáp án đúng chưa được hiển thị.</div></div>';$('playPage').appendChild(overlay);overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayContinue')){overlay.remove();teamTurn=null;renderTeamControls()}}}
+function teamWrong(chosen){let name=teamList.find(t=>t.id===teamTurn)?.name||'Đội';clearInterval(timer);beep(220,.18);setTimeout(()=>beep(160,.22),120);document.querySelectorAll('.answer').forEach(b=>b.classList.remove('selected'));chosen.classList.add('wrong');let overlay=document.createElement('div');overlay.className='revealOverlay';overlay.innerHTML='<div class="revealBox"><div class="label">❌ CHƯA ĐÚNG</div><div class="teamWrongFlash">Đội '+esc(name)+' chưa chính xác!</div><div class="answerText" style="font-size:28px">Câu hỏi vẫn còn hiệu lực.</div><button id="overlayContinue" class="btn primary" style="font-size:20px;padding:14px 24px">🎯 Chọn đội khác</button><div class="hint">Đáp án đúng chưa được hiển thị.</div></div>';$('playPage').appendChild(overlay);overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayContinue')){overlay.remove();teamTurn=null;renderTeamControls()}}}
 function teamTimeout(){if(settings.gameType!=='team')return;clearInterval(timer);let name=teamList.find(t=>t.id===teamTurn)?.name||'Đội';beep(250,.25);let overlay=document.createElement('div');overlay.className='revealOverlay';overlay.innerHTML='<div class="revealBox"><div class="label">⏰ HẾT THỜI GIAN</div><div class="teamWrongFlash">'+esc(name)+' chưa trả lời kịp.</div><div class="answerText" style="font-size:28px">Câu hỏi vẫn còn hiệu lực.</div><button id="overlayContinue" class="btn primary" style="font-size:20px;padding:14px 24px">🎯 Chọn đội khác</button><div class="hint">Đáp án đúng chưa được hiển thị.</div></div>';$('playPage').appendChild(overlay);overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayContinue')){overlay.remove();teamTurn=null;renderTeamControls();startTimer()}}}
 
 function openTeacher(){ $('homePage').classList.add('hidden');$('playPage').classList.add('hidden');$('teacherPage').classList.remove('hidden'); if(!qs.length){}}
@@ -145,6 +145,12 @@ h+=`<div class="answers">${ops.map(o=>`<button class="answer" data-correct="${o.
 $('quiz').innerHTML=h;
 $('quiz').className='quiz dynamicTheme '+theme+' '+effect;
 document.querySelectorAll('.answer').forEach((b,n)=>b.style.animationDelay=(n*.07)+'s');
+if(settings.gameType==='team'){
+  renderTeamControls();
+  document.querySelectorAll('.answer').forEach(b=>b.onclick=e=>{e.stopPropagation();if(!teamTurn){alert('Hãy chọn đội trả lời trước.');return}if(!revealed)reveal(b)});
+  startTimer();
+  return;
+}
 if(settings.mode!=='click'){
   document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(!revealed){document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)}else next()});
 }
@@ -163,9 +169,37 @@ if(settings.mode==='click'){
 }
 startTimer();
 }
-function startTimer(){left=Number(settings.time)||0;clock();if(!left)return;timer=setInterval(()=>{left--;clock();if(left<=0){clearInterval(timer);beep(250,.25);if(settings.timeout==='reveal')reveal();else if(settings.timeout==='next')next()}else if(settings.sound==='fast'&&left<=5)beep(1150,.05);else if(settings.sound==='tick')beep(760,.04)},1000)}
+function startTimer(){left=Number(settings.time)||0;clock();if(!left)return;timer=setInterval(()=>{left--;clock();if(left<=0){clearInterval(timer);beep(250,.25);if(settings.gameType==='team'){teamTimeout()}else if(settings.timeout==='reveal')reveal();else if(settings.timeout==='next')next()}else if(settings.sound==='fast'&&left<=5)beep(1150,.05);else if(settings.sound==='tick')beep(760,.04)},1000)}
 function clock(){let c=$('clock');c.textContent=left?`⏱️ ${left}s`:'∞';c.className='pill timer '+(left<=5&&left?'end':left<=10&&left?'warn':'')}
 function reveal(chosen=null){
+
+if(settings.gameType==='team'){
+  if(!chosen)return teamTimeout();
+  const answerMatchesTeam=b=>{
+    if(!b)return false;
+    const letter=String(b.dataset.letter||'').trim().toUpperCase(),text=String(b.dataset.text||'').trim().toUpperCase();
+    const norm=String(qs[idx]?.ans??'').trim().toUpperCase(),first=norm.charAt(0),rest=norm.slice(1).trim();
+    const code=(['A','B','C','D'].includes(first)&&(norm.length===1||[':', '.', '-', ')'].includes(rest.charAt(0))))?first:'';
+    const at=code?rest.slice(1).trim():norm;
+    return (code&&letter===code)||(text&&text===at);
+  };
+  const correctTeam=[...document.querySelectorAll('.answer')].find(answerMatchesTeam)||document.querySelector('.answer[data-correct="true"]');
+  if(!correctTeam)return teamWrong(chosen);
+  const isCorrect=chosen===correctTeam||chosen.dataset.correct==='true'||answerMatchesTeam(chosen);
+  if(!isCorrect)return teamWrong(chosen);
+  revealed=true;clearInterval(timer);
+  const team=teamList.find(t=>t.id===teamTurn);
+  if(team)teamScores[team.id]=(teamScores[team.id]||0)+teamPointValue;
+  correctTeam.classList.add('correct');
+  document.querySelectorAll('.answer').forEach(b=>{if(b!==correctTeam)b.classList.add('wrong')});
+  beep(1200,.12);setTimeout(()=>beep(1500,.16),120);celebrate();
+  let overlay=document.createElement('div');overlay.className='revealOverlay';
+  overlay.innerHTML='<div class="revealBox"><div class="label">🎉 CHÍNH XÁC!</div><div class="teamCorrectFlash">+'+teamPointValue+' điểm</div><div class="answerText" style="font-size:28px">'+esc(team?.name||'Đội')+'</div><div class="teamBoard"><h3>🏆 BẢNG XẾP HẠNG</h3>'+teamRankRows()+'</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button></div>';
+  $('playPage').appendChild(overlay);
+  overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext')){overlay.remove();next()}};
+  return;
+}
+
 if(revealed)return;revealed=true;clearInterval(timer);
 let rawAnswer=String(qs[idx]?.ans??'').trim(),normAnswer=rawAnswer.toUpperCase();
 const answerMatches=b=>{
@@ -255,9 +289,9 @@ melody.forEach((f,i)=>{
 }catch(e){}
 }
 function next(){idx++;if(idx>=qs.length){finish();return}render()}
-function finish(){clearInterval(timer);$('count').textContent='Hoàn thành';$('clock').textContent='🏆';$('bar').style.width='100%';$('quiz').innerHTML=`<div class="result"><div style="font-size:75px">🏆</div><h1>Hoàn thành!</h1><div class="score">${qs.length}</div><p class="muted">câu hỏi đã trình chiếu</p><button class="btn primary" onclick="home()">🏠 Về kho câu hỏi</button></div>`}
+function finish(){clearInterval(timer);$('count').textContent='Hoàn thành';$('clock').textContent='🏆';$('bar').style.width='100%';if(settings.gameType==='team'){let rows=teamRankRows();$('quiz').innerHTML='<div class="result"><div style="font-size:75px">🏆</div><h1>Kết quả chung cuộc</h1><div class="teamBoard" style="max-width:700px;margin:20px auto"><h3>🏆 BẢNG XẾP HẠNG</h3>'+rows+'</div><button class="btn primary" onclick="home()">🏠 Về kho câu hỏi</button></div>';return}$('quiz').innerHTML=`<div class="result"><div style="font-size:75px">🏆</div><h1>Hoàn thành!</h1><div class="score">${qs.length}</div><p class="muted">câu hỏi đã trình chiếu</p><button class="btn primary" onclick="home()">🏠 Về kho câu hỏi</button></div>`}
 $('mute').onclick=()=>{audio=!audio;$('mute').textContent=audio?'🔊':'🔇'}
 function template(){let count=Number($('answerCount').value||4),letters='ABCD'.slice(0,count).split(''),headers=['STT','Câu hỏi','Hình ảnh câu hỏi',...letters,'Đáp án đúng'];let sampleOpts={A:'Hà Nội',B:'Huế',C:'Đà Nẵng',D:'TP.HCM'},row=[1,'Thủ đô Việt Nam là gì?','',...letters.map(x=>sampleOpts[x]),'A'],row2=[2,'2 + 2 bằng bao nhiêu?','',...letters.map(x=>String({A:'3',B:'4',C:'5',D:'6'}[x]||'')),'B'];let ws=XLSX.utils.aoa_to_sheet([headers,row,row2]),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'CauHoi');XLSX.writeFile(wb,'Quiz_School_Mau_'+count+'_dap_an.xlsx')}
-renderSets();
+initTeamInputs();renderSets();
 </script>
 </body></html>
