@@ -8,6 +8,20 @@
 :root{--p:#5b5ce2;--p2:#8b5cf6;--bg:#f5f7ff;--ink:#182033;--muted:#727b91;--line:#e7eaf3;--ok:#16a36e;--danger:#ef5968}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}button,input,select{font:inherit}.hidden{display:none!important}
 nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 4%;position:sticky;top:0;z-index:10}.logo{font-size:22px;font-weight:900;display:flex;align-items:center;gap:9px}.logo i{font-style:normal;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:9px 11px;border-radius:13px}.navBtns{display:flex;gap:9px}.btn{border:0;border-radius:13px;padding:11px 17px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff}.soft{background:#eef0ff;color:var(--p)}.danger{background:#fff0f2;color:#c73546}.container{max-width:1180px;margin:auto;padding:30px 20px 60px}.hero{padding:34px 0 28px}.hero h1{font-size:46px;margin:0 0 8px}.hero p,.muted{color:var(--muted)}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:20px 0;flex-wrap:wrap}.sets{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.set{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 10px 35px #27315b0b}.setIcon{font-size:42px}.set h3{margin:10px 0 6px}.set .meta{font-size:13px;color:var(--muted);line-height:1.6}.setActions{display:flex;gap:8px;margin-top:15px}.card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 14px 45px #27315b10;padding:26px}.upload{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-width:0;border:2px dashed #bcc5f5;border-radius:18px;padding:28px 20px;text-align:center;background:#fafbff;cursor:pointer;overflow:hidden}.upload b,.upload .muted{display:block;max-width:100%;overflow-wrap:anywhere}.upload input{display:none}.setup{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:12px}.setting{border:1px solid var(--line);padding:14px;border-radius:15px}.setting label{display:block;font-weight:800;font-size:14px;margin-bottom:6px}.setting select,.setting input{width:100%;padding:10px;border:1px solid #dfe3ed;border-radius:10px;background:#fff}.questionList{margin-top:20px}.row{display:grid;grid-template-columns:55px 1fr 110px 110px;gap:10px;align-items:center;border-bottom:1px solid #eef0f5;padding:12px 5px}.play{min-height:100vh;background:radial-gradient(circle at 50% 0,#eaf0ff,#faf9ff 55%,#fff);padding-bottom:40px}.playbar{max-width:1150px;margin:auto;padding:18px;display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{background:#fff;border:1px solid var(--line);padding:10px 15px;border-radius:999px;font-weight:900;box-shadow:0 7px 25px #27315b0b}.timer{font-size:20px;color:var(--p)}.timer.warn{color:#df8614}.timer.end{color:var(--danger)}.progress{height:9px;background:#e7eaf2;max-width:1110px;margin:auto;border-radius:10px;overflow:hidden}.progress div{height:100%;background:linear-gradient(90deg,var(--p),var(--p2))}.quiz{max-width:1110px;background:#fff;border-radius:30px;padding:35px;margin:25px auto;box-shadow:0 18px 60px #27315b14}.qmeta{display:flex;justify-content:space-between;color:var(--p);font-weight:900}.question{text-align:center;font-size:clamp(28px,4vw,48px);font-weight:900;line-height:1.18;margin:24px auto}.qimage{display:block;max-width:100%;max-height:360px;margin:10px auto 25px;border-radius:20px}.answers{display:grid;grid-template-columns:1fr 1fr;gap:16px}.answer{background:#fff;border:3px solid #edf0f6;border-radius:20px;padding:19px;text-align:left;cursor:pointer;font-size:19px;font-weight:800;min-height:80px}.answer:hover{border-color:#9ca5ef}.answer.selected{border-color:#f2ae42;background:#fff9ee}.answer.correct{border-color:var(--ok);background:#ebfff6;color:#08764c}.answer.wrong{border-color:var(--danger);background:#fff0f3}.letter{display:inline-grid;place-items:center;width:39px;height:39px;background:#eef0ff;color:var(--p);border-radius:50%;margin-right:9px}.center{text-align:center;margin-top:22px}.result{text-align:center;padding:35px}.score{font-size:70px;font-weight:950;color:var(--p)}
+.clickStart{min-height:420px;display:grid;place-items:center;text-align:center;cursor:pointer;user-select:none}
+.clickStart .startIcon{font-size:90px;animation:pulseStart 1.5s infinite}
+.clickStart h1{font-size:clamp(34px,6vw,64px);margin:12px 0}
+.clickStart p{font-size:20px;color:var(--muted)}
+.revealOverlay{position:fixed;inset:0;z-index:100;background:rgba(12,18,45,.88);display:grid;place-items:center;animation:fadeIn .22s ease}
+.revealBox{width:min(92vw,900px);background:#fff;border-radius:34px;padding:42px;text-align:center;box-shadow:0 0 0 8px #ffffff22,0 25px 100px #0008;animation:answerBoom .55s cubic-bezier(.16,1,.3,1)}
+.revealBox .label{font-size:clamp(24px,4vw,42px);font-weight:950;color:var(--ok);letter-spacing:2px}
+.revealBox .bigLetter{font-size:clamp(70px,13vw,150px);font-weight:1000;line-height:.9;color:var(--ok);text-shadow:0 0 35px #16a36e66}
+.revealBox .answerText{font-size:clamp(30px,5vw,64px);font-weight:950;line-height:1.12;margin:18px auto;max-width:850px}
+.revealBox .hint{color:var(--muted);font-weight:800;margin-top:18px}
+.confetti{position:fixed;top:-20px;width:10px;height:18px;z-index:110;pointer-events:none;animation:confettiFall 1.6s linear forwards}
+@keyframes pulseStart{50%{transform:scale(1.08)}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes answerBoom{0%{transform:scale(.45) rotate(-3deg);opacity:0}70%{transform:scale(1.05) rotate(1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes confettiFall{to{transform:translate3d(var(--dx),110vh,0) rotate(720deg);opacity:0}}
 @media(max-width:850px){.sets,.setup{grid-template-columns:1fr}.setup>div{min-width:0}.card{padding:20px}.answers,.settings{grid-template-columns:1fr}.row{grid-template-columns:40px 1fr 80px}.row .del{display:none}}@media(max-width:560px){nav{padding:0 14px}.logo{font-size:18px}.navBtns .soft{display:none}.hero h1{font-size:36px}.container{padding:22px 14px}.quiz{padding:20px}.question{font-size:30px}}
 </style>
 </head>
@@ -38,6 +52,7 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 <div class="setting"><label>🔀 Trộn đáp án</label><select id="shuffleA"><option value="no">Không</option><option value="yes">Có</option></select></div>
 <div class="setting"><label>🖥️ Màn hình</label><select id="full"><option value="no">Bình thường</option><option value="yes">Toàn màn hình</option></select></div>
 <div class="setting"><label>🔢 Số lượng đáp án</label><select id="answerCount"><option value="2">A – B (2 đáp án)</option><option value="3">A – B – C (3 đáp án)</option><option value="4" selected>A – B – C – D (4 đáp án)</option></select></div>
+<div class="setting"><label>🖱️ Chế độ trình chiếu</label><select id="mode"><option value="click" selected>Click 2 bước</option><option value="auto">Tự động</option></select><div class="muted" style="font-size:12px;margin-top:6px">Click 1: hiện câu hỏi + đáp án · Click 2: bật đáp án đúng</div></div>
 </div>
 <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap"><button class="btn primary" onclick="saveSet()">💾 Lưu bộ câu hỏi</button><button class="btn soft" onclick="startCurrent()">🚀 Chơi ngay</button></div>
 </div></div>
@@ -56,18 +71,60 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 $('excel').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=z=>{try{let wb=XLSX.read(z.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});qs=rows.map(r=>({q:String(r['Câu hỏi']||r['Cau hoi']||r.Question||''),img:String(r['Hình ảnh câu hỏi']||r['Hinh anh cau hoi']||r.Image||''),opts:['A','B','C','D'].map(k=>String(r[k]||'')),ans:String(r['Đáp án đúng']||r['Dap an dung']||r.Answer||'').toUpperCase().trim()})).filter(x=>x.q||x.img);$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=`✅ Đã nhập ${qs.length} câu từ ${f.name}`;preview()}catch(e){$('importStatus').textContent='❌ Không đọc được file'}};r.readAsArrayBuffer(f)}
 function preview(){$('preview').innerHTML=qs.length?'<h3>👀 Xem trước</h3>'+qs.slice(0,8).map((q,n)=>`<div class="row"><b>${n+1}</b><span>${esc(q.q||'[Câu hỏi hình ảnh]')}</span><span>Đúng: <b>${esc(q.ans)}</b></span><span class="del">${q.img?'🖼️ Hình':''}</span></div>`).join('')+(qs.length>8?`<p class="muted">... và ${qs.length-8} câu khác</p>`:''):''}
 $('time').onchange=()=>$('custom').classList.toggle('hidden',$('time').value!=='custom');
-function getSettings(){return{time:$('time').value==='custom'?Number($('custom').value):Number($('time').value),sound:$('sound').value,timeout:$('timeout').value,shuffleQ:$('shuffleQ').value,shuffleA:$('shuffleA').value,full:$('full').value,answerCount:Number($('answerCount').value)}}
+function getSettings(){return{time:$('time').value==='custom'?Number($('custom').value):Number($('time').value),sound:$('sound').value,timeout:$('timeout').value,shuffleQ:$('shuffleQ').value,shuffleA:$('shuffleA').value,full:$('full').value,answerCount:Number($('answerCount').value),mode:$('mode').value}}
 function saveSet(){if(!qs.length){alert('Hãy nhập Excel trước.');return}let st=getSettings(),maxAns=st.answerCount;if(qs.some(q=>q.ans && 'ABCD'.indexOf(q.ans)>=maxAns)){alert('Có câu có đáp án đúng nằm ngoài số lượng đáp án đã chọn. Hãy chọn nhiều đáp án hơn hoặc sửa cột “Đáp án đúng” trong Excel.');return}current={name:$('setName').value||'Bộ câu hỏi',questions:qs,settings:st};let found=sets.findIndex(s=>s.id===current.id);if(found<0){current.id=Date.now();sets.push(current)}else sets[found]=current;localStorage.setItem('quizSchoolSets',JSON.stringify(sets));alert('Đã lưu bộ câu hỏi.');home()}
-function editSet(n){current=sets[n];qs=current.questions;openTeacher();$('setName').value=current.name;$('time').value=current.settings.time;$('sound').value=current.settings.sound;$('timeout').value=current.settings.timeout;$('shuffleQ').value=current.settings.shuffleQ;$('shuffleA').value=current.settings.shuffleA;$('full').value=current.settings.full;$('answerCount').value=String(current.settings.answerCount||4);preview()}
+function editSet(n){current=sets[n];qs=current.questions;openTeacher();$('setName').value=current.name;$('time').value=current.settings.time;$('sound').value=current.settings.sound;$('timeout').value=current.settings.timeout;$('shuffleQ').value=current.settings.shuffleQ;$('shuffleA').value=current.settings.shuffleA;$('full').value=current.settings.full;$('answerCount').value=String(current.settings.answerCount||4);$('mode').value=current.settings.mode||'click';preview()}
 function delSet(n){if(confirm('Xóa bộ câu hỏi này?')){sets.splice(n,1);localStorage.setItem('quizSchoolSets',JSON.stringify(sets));renderSets()}}
 function playSet(n){current=sets[n];qs=current.questions.map(x=>({...x}));settings={...current.settings,answerCount:Number(current.settings.answerCount||4)};if(settings.shuffleQ==='yes')qs=shuffle(qs);idx=0;openPlay();render()}
 function startCurrent(){if(!qs.length){alert('Hãy nhập Excel trước.');return}settings=getSettings();if(settings.shuffleQ==='yes')qs=shuffle(qs);idx=0;openPlay();render()}
 function openPlay(){$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('playPage').classList.remove('hidden');if(settings.full==='yes')document.documentElement.requestFullscreen?.().catch(()=>{})}
 function beep(f=800,d=.06){if(!audio||settings.sound==='off')return;try{ctx ||= new (window.AudioContext||window.webkitAudioContext)();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d)}catch(e){}}
-function render(){clearInterval(timer);revealed=false;let x=qs[idx],count=Number(settings.answerCount||4),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:x.ans==='ABCD'[n]})).filter(o=>o.t.trim()!=='');if(settings.shuffleA==='yes')ops=shuffle(ops);$('count').textContent=`Câu ${idx+1}/${qs.length}`;$('bar').style.width=(idx/qs.length*100)+'%';let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;h+=`<div class="answers">${ops.map((o,n)=>`<button class="answer" data-correct="${o.correct}"><span class="letter">${'ABCD'[n]}</span>${esc(o.t)}</button>`).join('')}</div><div class="center"><button id="next" class="btn primary hidden">➡️ Câu tiếp theo</button></div>`;$('quiz').innerHTML=h;document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(!revealed){document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)}else next()});startTimer()}
+function render(){
+clearInterval(timer);revealed=false;left=0;let x=qs[idx];
+$('count').textContent=`Câu ${idx+1}/${qs.length}`;$('bar').style.width=(idx/qs.length*100)+'%';
+if(settings.mode==='click'){
+  $('clock').textContent='∞';$('clock').className='pill timer';
+  $('quiz').innerHTML=`<div class="clickStart" id="clickStart"><div><div class="startIcon">👆</div><h1>CLICK ĐỂ HIỆN CÂU HỎI</h1><p>Câu ${idx+1} / ${qs.length}<br>Click lần 2 để hiện đáp án đúng</p></div></div>`;
+  $('clickStart').onclick=()=>showQuestion();
+  return;
+}
+showQuestion();
+}
+function showQuestion(){
+if(revealed||document.querySelector('.answers'))return;
+let x=qs[idx],count=Number(settings.answerCount||4),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:x.ans==='ABCD'[n]})).filter(o=>o.t.trim()!=='');
+if(settings.shuffleA==='yes')ops=shuffle(ops);
+let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
+if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
+h+=`<div class="answers">${ops.map((o,n)=>`<button class="answer" data-correct="${o.correct}" data-letter="${'ABCD'[n]}" data-text="${esc(o.t)}"><span class="letter">${'ABCD'[n]}</span>${esc(o.t)}</button>`).join('')}</div><div class="center"><button id="next" class="btn primary hidden">➡️ Câu tiếp theo</button></div>`;
+$('quiz').innerHTML=h;
+if(settings.mode==='click'){
+  $('quiz').onclick=e=>{
+    if(e.target.closest('#next'))return;
+    if(!revealed)reveal();
+    else next();
+  };
+}
+startTimer();
+}
 function startTimer(){left=Number(settings.time)||0;clock();if(!left)return;timer=setInterval(()=>{left--;clock();if(left<=0){clearInterval(timer);beep(250,.25);if(settings.timeout==='reveal')reveal();else if(settings.timeout==='next')next()}else if(settings.sound==='fast'&&left<=5)beep(1150,.05);else if(settings.sound==='tick')beep(760,.04)},1000)}
 function clock(){let c=$('clock');c.textContent=left?`⏱️ ${left}s`:'∞';c.className='pill timer '+(left<=5&&left?'end':left<=10&&left?'warn':'')}
-function reveal(){if(revealed)return;revealed=true;clearInterval(timer);document.querySelectorAll('.answer').forEach(b=>{if(b.dataset.correct==='true')b.classList.add('correct');else if(b.classList.contains('selected'))b.classList.add('wrong');b.onclick=next});$('next').classList.remove('hidden');$('next').onclick=next;beep(1200,.12)}
+function reveal(){
+if(revealed)return;revealed=true;clearInterval(timer);
+let correct=document.querySelector('.answer[data-correct="true"]');
+if(!correct){next();return}
+document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add('wrong');});
+correct.classList.add('correct');
+beep(1200,.12);setTimeout(()=>beep(1500,.16),120);
+let overlay=document.createElement('div');overlay.className='revealOverlay';
+overlay.innerHTML=`<div class="revealBox"><div class="label">🎉 ĐÁP ÁN ĐÚNG 🎉</div><div class="bigLetter">${correct.dataset.letter}</div><div class="answerText">${correct.dataset.text}</div><div class="hint">Click để sang câu tiếp theo</div></div>`;
+$('playPage').appendChild(overlay);celebrate();
+overlay.onclick=()=>{overlay.remove();next()};
+$('next')?.classList.remove('hidden');if($('next'))$('next').onclick=next;
+}
+function celebrate(){
+for(let i=0;i<70;i++){let s=document.createElement('i');s.className='confetti';s.style.left=(Math.random()*100)+'vw';s.style.setProperty('--dx',((Math.random()-.5)*240)+'px');s.style.animationDelay=(Math.random()*.25)+'s';s.style.transform='rotate('+Math.random()*360+'deg)';s.style.background='hsl('+Math.random()*360+' 90% 55%)';document.body.appendChild(s);setTimeout(()=>s.remove(),1900)}
+}
 function next(){idx++;if(idx>=qs.length){finish();return}render()}
 function finish(){clearInterval(timer);$('count').textContent='Hoàn thành';$('clock').textContent='🏆';$('bar').style.width='100%';$('quiz').innerHTML=`<div class="result"><div style="font-size:75px">🏆</div><h1>Hoàn thành!</h1><div class="score">${qs.length}</div><p class="muted">câu hỏi đã trình chiếu</p><button class="btn primary" onclick="home()">🏠 Về kho câu hỏi</button></div>`}
 $('mute').onclick=()=>{audio=!audio;$('mute').textContent=audio?'🔊':'🔇'}
