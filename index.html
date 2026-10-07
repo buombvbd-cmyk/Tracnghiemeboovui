@@ -111,11 +111,11 @@ showQuestion();
 }
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,correct:(/^[ABCD]$/.test(answerNorm)&&answerNorm==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(/^[ABCD]$/.test(answerNorm)&&answerNorm==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
 if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
-h+=`<div class="answers">${ops.map((o,n)=>`<button class="answer" data-correct="${o.correct}" data-letter="${'ABCD'[n]}" data-text="${esc(o.t)}"><span class="letter">${'ABCD'[n]}</span>${esc(o.t)}</button>`).join('')}</div><div class="center"><button id="next" class="btn primary hidden">➡️ Câu tiếp theo</button></div>`;
+h+=`<div class="answers">${ops.map(o=>`<button class="answer" data-correct="${o.correct}" data-letter="${o.letter}" data-text="${esc(o.t)}"><span class="letter">${o.letter}</span>${esc(o.t)}</button>`).join('')}</div><div class="center"><button id="next" class="btn primary hidden">➡️ Câu tiếp theo</button></div>`;
 $('quiz').innerHTML=h;
 $('quiz').className='quiz dynamicTheme '+theme+' '+effect;
 document.querySelectorAll('.answer').forEach((b,n)=>b.style.animationDelay=(n*.07)+'s');
@@ -160,7 +160,7 @@ if(!correct){
 }
 document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add('wrong');});
 correct.classList.add('correct');
-let chosenIsCorrect=!!chosen && chosen.dataset.correct==='true';
+let chosenIsCorrect=!!chosen && (chosen===correct || chosen.dataset.correct==='true');
 if(chosen && !chosenIsCorrect) chosen.classList.add('wrong');
 let isWrong=!!chosen && !chosenIsCorrect;
 if(isWrong){
