@@ -196,7 +196,7 @@ if(settings.gameType==='team'){
   document.querySelectorAll('.answer').forEach(b=>{if(b!==correctTeam)b.classList.add('wrong')});
   beep(1200,.12);setTimeout(()=>beep(1500,.16),120);celebrate();
   let overlay=document.createElement('div');overlay.className='revealOverlay';
-  overlay.innerHTML='<div class="revealBox"><div class="label">🎉 CHÍNH XÁC!</div><div class="teamCorrectFlash">+'+teamPointValue+' điểm</div><div class="answerText" style="font-size:28px">'+esc(team?.name||'Đội')+'</div><div class="teamBoard"><h3>🏆 BẢNG XẾP HẠNG</h3>'+teamRankRows()+'</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button></div>';
+  overlay.innerHTML='<div class="revealBox"><div class="label">🎉 CHÍNH XÁC!</div><div class="teamCorrectFlash">+'+teamPointValue+' điểm</div><div class="answerText" style="font-size:28px">'+esc(team?.name||'Đội')+'</div><div class="bigLetter">'+esc(correctTeam.dataset.letter||'')+'</div><div class="answerText">'+esc(correctTeam.dataset.text||'')+'</div><div class="teamBoard"><h3>🏆 BẢNG XẾP HẠNG</h3>'+teamRankRows()+'</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button></div>';
   $('playPage').appendChild(overlay);
   overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext')){overlay.remove();next()}};
   return;
