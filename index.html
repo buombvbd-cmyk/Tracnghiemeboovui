@@ -341,11 +341,19 @@ function getAnswerSpec(x){
 const raw=String(x?.ans??'').trim();
 const opts=Array.isArray(x?.opts)?x.opts.map(v=>String(v??'').trim()):[];
 let code='',text=raw;
-const m=raw.match(/^([ABCD])\s*(?:(?:[:.)-])\s*)?(.+)$/i);
-if(m && /^[ABCD]\s*[:.)-]\s*/i.test(raw)){code=m[1].toUpperCase();text=m[2].trim();}
-else if(/^[ABCD]$/i.test(raw)){code=raw.toUpperCase();text='';}
-if(!code && text){const i=opts.findIndex(v=>v.toUpperCase()===text.toUpperCase());if(i>=0)code='ABCD'[i];}
-if(code && !text){const i='ABCD'.indexOf(code);if(i>=0)text=opts[i]||'';}
+// Luôn lấy dữ liệu từ cột "Đáp án đúng". Hỗ trợ: B, B: Cây kéo, B. Cây kéo,
+// hoặc cả trường hợp file dùng ký hiệu khác như K: Cây kéo.
+const m=raw.match(/^([A-Za-z])\s*[:.)-]\s*(.+)$/);
+if(m){code=m[1].toUpperCase();text=m[2].trim();}
+else if(/^[A-Za-z]$/.test(raw)){code=raw.toUpperCase();text='';}
+if(text){
+  const i=opts.findIndex(v=>v.trim().toUpperCase()===text.toUpperCase());
+  if(i>=0){code='ABCD'[i];text=opts[i].trim();}
+}
+if(code && !text && /^[ABCD]$/.test(code)){
+  const i='ABCD'.indexOf(code);
+  if(i>=0)text=opts[i]||'';
+}
 return {raw,code,text};
 }
 
