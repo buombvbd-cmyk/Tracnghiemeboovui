@@ -413,27 +413,28 @@ function reveal(chosen=null){
 
 if(settings.gameType==='team'){
   if(!chosen)return teamTimeout();
-  const teamSpec=getAnswerSpec(qs[idx]);
+  const teamCorrectIndex=getCorrectAnswerIndex(qs[idx]);
+  const teamCorrectLetter=teamCorrectIndex>=0?'ABCD'[teamCorrectIndex]:'';
   const answerMatchesTeam=b=>{
     if(!b)return false;
     const letter=String(b.dataset.letter||'').trim().toUpperCase();
-    const text=String(b.dataset.text||'').trim();
-    const target=String(teamSpec.text||'').normalize('NFC').trim().toUpperCase().replace(/\s+/g,'').replace(/[._\-–—:;,)]+/g,'');
-    const bt=text.normalize('NFC').trim().toUpperCase().replace(/\s+/g,'').replace(/[._\-–—:;,)]+/g,'');
-    return (teamSpec.code&&letter===teamSpec.code)||(target&&bt===target);
+    return letter===teamCorrectLetter;
   };
-  const correctTeam=[...document.querySelectorAll('.answer')].find(answerMatchesTeam)||document.querySelector('.answer[data-correct="true"]');
+  const correctTeam=[...document.querySelectorAll('.answer')].find(answerMatchesTeam);
   if(!correctTeam)return teamWrong(chosen);
-  const isCorrect=chosen===correctTeam||chosen.dataset.correct==='true'||answerMatchesTeam(chosen);
+  const isCorrect=answerMatchesTeam(chosen);
   if(!isCorrect)return teamWrong(chosen);
   revealed=true;clearInterval(timer);
   const team=teamList.find(t=>t.id===teamTurn);
   if(team)teamScores[team.id]=(teamScores[team.id]||0)+teamPointValue;
+  document.querySelectorAll('.answer').forEach(b=>{
+    if(b===correctTeam)b.classList.add('correct');
+    else b.classList.add('wrong','revealedWrong');
+  });
   correctTeam.classList.add('correct');
-  document.querySelectorAll('.answer').forEach(b=>{if(b!==correctTeam)b.classList.add('wrong')});
   beep(1200,.12);setTimeout(()=>beep(1500,.16),120);celebrate();
   let overlay=document.createElement('div');overlay.className='revealOverlay';
-  overlay.innerHTML='<div class="revealBox"><div class="label">🎉 CHÍNH XÁC!</div><div class="teamCorrectFlash">+'+teamPointValue+' điểm</div><div class="answerText" style="font-size:28px">'+esc(team?.name||'Đội')+'</div><div class="bigLetter">'+esc(correctTeam.dataset.letter||'')+'</div><div class="answerText">'+esc(correctTeam.dataset.text||'')+'</div><div class="teamBoard"><h3>🏆 BẢNG XẾP HẠNG</h3>'+teamRankRows()+'</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button></div>';
+  overlay.innerHTML='<div class="revealBox"><div class="label">🎉 CHÍNH XÁC!</div><div class="teamCorrectFlash">+'+teamPointValue+' điểm</div><div class="answerText" style="font-size:28px">'+esc(team?.name||'Đội')+'</div><div class="bigLetter">'+esc(correctTeam.dataset.letter||'')+'</div><div class="answerText">'+esc(String(qs[idx]?.ans??'').trim())+'</div><div class="teamBoard"><h3>🏆 BẢNG XẾP HẠNG</h3>'+teamRankRows()+'</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button></div>';
   $('playPage').appendChild(overlay);
   overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext')){overlay.remove();next()}};
   return;
