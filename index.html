@@ -141,7 +141,14 @@ function startTimer(){left=Number(settings.time)||0;clock();if(!left)return;time
 function clock(){let c=$('clock');c.textContent=left?`⏱️ ${left}s`:'∞';c.className='pill timer '+(left<=5&&left?'end':left<=10&&left?'warn':'')}
 function reveal(chosen=null){
 if(revealed)return;revealed=true;clearInterval(timer);
-let correct=document.querySelector('.answer[data-correct="true"]');
+let rawAnswer=String(qs[idx]?.ans??'').trim(),normAnswer=rawAnswer.toUpperCase();
+const answerMatches=b=>{
+  if(!b)return false;
+  const letter=String(b.dataset.letter||'').trim().toUpperCase();
+  const text=String(b.dataset.text||'').trim().toUpperCase();
+  return (/^[A-Z]$/.test(normAnswer)&&letter===normAnswer) || (text!==''&&text===normAnswer);
+};
+let correct=[...document.querySelectorAll('.answer')].find(answerMatches) || document.querySelector('.answer[data-correct="true"]');
 if(!correct){
   let raw=String(qs[idx]?.ans??'').trim();
   if(raw){
@@ -160,7 +167,7 @@ if(!correct){
 }
 document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add('wrong');});
 correct.classList.add('correct');
-let chosenIsCorrect=!!chosen && (chosen===correct || chosen.dataset.correct==='true');
+let chosenIsCorrect=!!chosen && answerMatches(chosen);
 if(chosen && !chosenIsCorrect) chosen.classList.add('wrong');
 let isWrong=!!chosen && !chosenIsCorrect;
 if(isWrong){
