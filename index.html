@@ -56,6 +56,20 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 .authCard{width:min(460px,94vw);background:#fff;border:1px solid #e2e5f2;border-radius:28px;padding:34px;box-shadow:0 25px 80px #27315b20;text-align:center}
 .authLogo{font-size:58px;margin-bottom:6px}.authCard h1{margin:0 0 8px;font-size:32px}.authCard p{color:var(--muted);margin:0 0 24px}.authField{text-align:left;margin:13px 0}.authField label{display:block;font-weight:850;margin-bottom:7px}.authField input{width:100%;padding:13px 14px;border:1px solid #dfe3ed;border-radius:12px;outline:none}.authField input:focus{border-color:var(--p);box-shadow:0 0 0 4px #5b5ce218}.authSubmit{width:100%;margin-top:8px;padding:13px 18px;font-size:17px}.authMsg{min-height:24px;margin-top:14px;font-weight:800;color:var(--danger)}.authFoot{margin-top:22px;font-size:12px;color:#8a91a5}.userBadge{display:inline-flex;align-items:center;gap:7px;background:#f0f1ff;color:var(--p);padding:8px 12px;border-radius:999px;font-weight:850;font-size:13px}.logoutBtn{background:#fff0f2;color:#c73546}
 @media(max-width:560px){.authCard{padding:26px 20px}}
+.adminPanel{max-width:760px;margin:0 auto}
+.adminPanel .adminHead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.adminPanel h2{margin:0}
+.adminForm{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.adminForm .full{grid-column:1/-1}
+.adminForm label{display:block;font-weight:850;margin-bottom:7px}
+.adminForm input{width:100%;padding:12px 14px;border:1px solid #dfe3ed;border-radius:12px;outline:none}
+.adminForm input:focus{border-color:var(--p);box-shadow:0 0 0 4px #5b5ce218}
+.adminMsg{min-height:24px;margin-top:14px;font-weight:800}
+.adminMsg.ok{color:var(--ok)}
+.adminMsg.err{color:var(--danger)}
+.adminNote{padding:13px 15px;border-radius:14px;background:#f4f5ff;color:#59627a;font-size:13px;margin:16px 0}
+@media(max-width:560px){.adminForm{grid-template-columns:1fr}.adminForm .full{grid-column:auto}}
+
 </style>
 </head>
 <body>
@@ -80,6 +94,40 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 <div class="toolbar"><h2>📚 Bộ câu hỏi</h2><button class="btn primary" onclick="openTeacher()">＋ Tạo bộ mới</button></div>
 <div id="sets" class="sets"></div>
 </div><div class="siteFooter"><span>Yame Boo - 0899010906</span></div>
+
+<div id="adminPage" class="container hidden">
+<div class="adminPanel">
+  <div class="adminHead">
+    <div><h2>👑 Quản trị tài khoản</h2><p class="muted" style="margin:6px 0 0">Tạo tài khoản đăng nhập cho giáo viên.</p></div>
+    <button class="btn soft" onclick="home()">← Quay lại</button>
+  </div>
+  <div class="card">
+    <div class="adminNote">🔐 Chỉ tài khoản <b>ADMIN</b> mới được mở khu vực này. Mật khẩu giáo viên được gửi trực tiếp cho giáo viên sau khi tạo.</div>
+    <form id="teacherCreateForm" class="adminForm">
+      <div>
+        <label for="teacherName">👨‍🏫 Họ và tên</label>
+        <input id="teacherName" type="text" placeholder="Ví dụ: Nguyễn Văn A" required>
+      </div>
+      <div>
+        <label for="teacherEmail">📧 Email đăng nhập</label>
+        <input id="teacherEmail" type="email" placeholder="giaovien@truongxanh.edu.vn" required>
+      </div>
+      <div>
+        <label for="teacherPassword">🔒 Mật khẩu tạm</label>
+        <input id="teacherPassword" type="password" minlength="6" placeholder="Tối thiểu 6 ký tự" required>
+      </div>
+      <div>
+        <label for="teacherPassword2">🔒 Nhập lại mật khẩu</label>
+        <input id="teacherPassword2" type="password" minlength="6" placeholder="Nhập lại mật khẩu" required>
+      </div>
+      <div class="full">
+        <button id="createTeacherBtn" class="btn primary" type="submit">＋ Tạo tài khoản giáo viên</button>
+        <div id="adminMsg" class="adminMsg"></div>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
 
 <div id="teacherPage" class="container hidden">
 <div class="toolbar"><div><h1 style="margin:0">👨‍🏫 Khu vực giáo viên</h1><p class="muted">Quản lý bộ câu hỏi và cài đặt trò chơi.</p></div><button class="btn soft" onclick="home()">← Quay lại</button></div>
@@ -142,6 +190,12 @@ async function showLoggedIn(user){
   $('app').style.display='block';
   const navBtns = document.querySelector('.navBtns');
   if(navBtns && !document.getElementById('userBadge')){
+      if(profile.role==='admin'){
+        const adminBtn=document.createElement('button');
+        adminBtn.id='adminNavBtn'; adminBtn.className='btn primary'; adminBtn.textContent='👑 Quản trị';
+        adminBtn.onclick=openAdmin;
+        navBtns.appendChild(adminBtn);
+      }
     const badge=document.createElement('span');
     badge.id='userBadge'; badge.className='userBadge';
     badge.textContent=(profile.role==='admin'?'👑 ADMIN':'👨‍🏫 GIÁO VIÊN');
@@ -169,6 +223,34 @@ async function initQuizAuth(){
     if(event==='SIGNED_OUT') location.reload();
   });
 }
+
+async function createTeacherAccount(e){
+  e.preventDefault();
+  if(!currentProfile || currentProfile.role!=='admin') return;
+  const name=$('teacherName').value.trim(), email=$('teacherEmail').value.trim().toLowerCase();
+  const password=$('teacherPassword').value, password2=$('teacherPassword2').value;
+  const btn=$('createTeacherBtn'), msg=$('adminMsg');
+  msg.textContent=''; msg.className='adminMsg';
+  if(password.length<6){msg.textContent='❌ Mật khẩu phải có ít nhất 6 ký tự.';msg.classList.add('err');return}
+  if(password!==password2){msg.textContent='❌ Hai mật khẩu không giống nhau.';msg.classList.add('err');return}
+  btn.disabled=true; btn.textContent='⏳ Đang tạo tài khoản...';
+  try{
+    const {data,error}=await sb.functions.invoke('create-teacher',{
+      body:{full_name:name,email,password}
+    });
+    if(error) throw error;
+    if(!data?.ok) throw new Error(data?.message||'Không thể tạo tài khoản.');
+    msg.textContent='✅ Đã tạo tài khoản giáo viên: '+email;
+    msg.classList.add('ok');
+    $('teacherCreateForm').reset();
+  }catch(err){
+    console.error(err);
+    msg.textContent='❌ '+(err?.message||'Không thể tạo tài khoản. Hãy kiểm tra Edge Function create-teacher.');
+    msg.classList.add('err');
+  }finally{
+    btn.disabled=false; btn.textContent='＋ Tạo tài khoản giáo viên';
+  }
+}
 document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const btn=$('loginBtn'), msg=$('authMsg');
@@ -185,6 +267,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   await showLoggedIn(data.user);
   btn.disabled=false; btn.textContent='🔐 Đăng nhập';
 });
+document.getElementById('teacherCreateForm')?.addEventListener('submit', createTeacherAccount);
 initQuizAuth();
 
 let sets=JSON.parse(localStorage.getItem('quizSchoolSets')||'[]'),current=null,qs=[],idx=0,settings={},revealed=false,left=0,timer=null,ctx=null,audio=true,nextTimer=null,teamList=[],teamScores={},teamTurn=null,teamPointValue=10;
@@ -202,7 +285,9 @@ function selectTeam(id){if(settings.gameType!=='team'||revealed)return;teamTurn=
 function teamWrong(chosen){let name=teamList.find(t=>t.id===teamTurn)?.name||'Đội';clearInterval(timer);beep(220,.18);setTimeout(()=>beep(160,.22),120);document.querySelectorAll('.answer').forEach(b=>b.classList.remove('selected'));chosen.classList.add('wrong');let overlay=document.createElement('div');overlay.className='revealOverlay';overlay.innerHTML='<div class="revealBox"><div class="label">❌ CHƯA ĐÚNG</div><div class="teamWrongFlash">Đội '+esc(name)+' chưa chính xác!</div><div class="answerText" style="font-size:28px">Câu hỏi vẫn còn hiệu lực.</div><button id="overlayContinue" class="btn primary" style="font-size:20px;padding:14px 24px">🎯 Chọn đội khác</button><div class="hint">Đáp án đúng chưa được hiển thị.</div></div>';$('playPage').appendChild(overlay);overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayContinue')){overlay.remove();teamTurn=null;renderTeamControls()}}}
 function teamTimeout(){if(settings.gameType!=='team')return;clearInterval(timer);let name=teamList.find(t=>t.id===teamTurn)?.name||'Đội';beep(250,.25);let overlay=document.createElement('div');overlay.className='revealOverlay';overlay.innerHTML='<div class="revealBox"><div class="label">⏰ HẾT THỜI GIAN</div><div class="teamWrongFlash">'+esc(name)+' chưa trả lời kịp.</div><div class="answerText" style="font-size:28px">Câu hỏi vẫn còn hiệu lực.</div><button id="overlayContinue" class="btn primary" style="font-size:20px;padding:14px 24px">🎯 Chọn đội khác</button><div class="hint">Đáp án đúng chưa được hiển thị.</div></div>';$('playPage').appendChild(overlay);overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayContinue')){overlay.remove();teamTurn=null;renderTeamControls();startTimer()}}}
 
-function openTeacher(){ $('homePage').classList.add('hidden');$('playPage').classList.add('hidden');$('teacherPage').classList.remove('hidden'); if(!qs.length){}}
+function openTeacher(){ $('homePage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage')?.classList.add('hidden');$('teacherPage').classList.remove('hidden'); if(!qs.length){}}
+function openAdmin(){if(!currentProfile||currentProfile.role!=='admin'){alert('Bạn không có quyền quản trị.');return}$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage').classList.remove('hidden');$('adminMsg').textContent='';$('adminMsg').className='adminMsg';}
+
 function renderSets(){let el=$('sets');if(!sets.length){el.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center;padding:45px">📚<h2>Chưa có bộ câu hỏi</h2><p class="muted">Hãy tạo bộ đầu tiên trong khu vực giáo viên.</p></div>';return}el.innerHTML=sets.map((s,n)=>`<article class="set"><div class="setIcon">${['🌟','🚀','🧠','🏆','📖'][n%5]}</div><h3>${esc(s.name)}</h3><div class="meta">${s.questions.length} câu hỏi<br>Thời gian: ${s.settings.time==0?'Không giới hạn':s.settings.time+' giây'}<br>Âm thanh: ${s.settings.sound==='off'?'Tắt':'Bật'}<br>Đáp án: A–${'ABCD'[(Number(s.settings.answerCount||4))-1]}</div><div class="setActions"><button class="btn primary" onclick="playSet(${n})">▶ Chơi</button><button class="btn soft" onclick="editSet(${n})">⚙ Sửa</button><button class="btn danger del" onclick="delSet(${n})">Xóa</button></div></article>`).join('')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 $('excel').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=z=>{try{let wb=XLSX.read(z.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});qs=rows.map(r=>({q:String(r['Câu hỏi']||r['Cau hoi']||r.Question||''),img:String(r['Hình ảnh câu hỏi']||r['Hinh anh cau hoi']||r.Image||''),opts:['A','B','C','D'].map(k=>String(r[k]||'')),ans:String(r['Đáp án đúng']??r['Dap an dung']??r.Answer??'').trim()})).filter(x=>x.q||x.img);$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=`✅ Đã nhập ${qs.length} câu từ ${f.name}`;preview()}catch(e){$('importStatus').textContent='❌ Không đọc được file'}};r.readAsArrayBuffer(f)}
@@ -214,7 +299,7 @@ function editSet(n){current=sets[n];qs=current.questions;openTeacher();$('setNam
 function delSet(n){if(confirm('Xóa bộ câu hỏi này?')){sets.splice(n,1);localStorage.setItem('quizSchoolSets',JSON.stringify(sets));renderSets()}}
 function playSet(n){current=sets[n];qs=current.questions.map(x=>({...x}));settings={...current.settings,answerCount:Number(current.settings.answerCount||4),gameType:current.settings.gameType||'individual'};if(settings.shuffleQ==='yes')qs=shuffle(qs);idx=0;if(settings.gameType==='team')initTeamGame();openPlay();render()}
 function startCurrent(){if(!qs.length){alert('Hãy nhập Excel trước.');return}settings=getSettings();if(settings.shuffleQ==='yes')qs=shuffle(qs);idx=0;if(settings.gameType==='team')initTeamGame();openPlay();render()}
-function openPlay(){$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('playPage').classList.remove('hidden');if(settings.full==='yes')document.documentElement.requestFullscreen?.().catch(()=>{})}
+function openPlay(){$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('adminPage')?.classList.add('hidden');$('playPage').classList.remove('hidden');if(settings.full==='yes')document.documentElement.requestFullscreen?.().catch(()=>{})}
 function beep(f=800,d=.06){if(!audio||settings.sound==='off')return;try{ctx ||= new (window.AudioContext||window.webkitAudioContext)();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d)}catch(e){}}
 function render(){
 clearInterval(timer);clearTimeout(nextTimer);revealed=false;left=0;
