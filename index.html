@@ -337,9 +337,21 @@ clearInterval(timer);clearTimeout(nextTimer);revealed=false;left=0;
 $('count').textContent=`Câu ${idx+1}/${qs.length}`;$('bar').style.width=(idx/qs.length*100)+'%';
 showQuestion();
 }
+function getAnswerSpec(x){
+const raw=String(x?.ans??'').trim();
+const opts=Array.isArray(x?.opts)?x.opts.map(v=>String(v??'').trim()):[];
+let code='',text=raw;
+const m=raw.match(/^([ABCD])\s*(?:(?:[:.)-])\s*)?(.+)$/i);
+if(m && /^[ABCD]\s*[:.)-]\s*/i.test(raw)){code=m[1].toUpperCase();text=m[2].trim();}
+else if(/^[ABCD]$/i.test(raw)){code=raw.toUpperCase();text='';}
+if(!code && text){const i=opts.findIndex(v=>v.toUpperCase()===text.toUpperCase());if(i>=0)code='ABCD'[i];}
+if(code && !text){const i='ABCD'.indexOf(code);if(i>=0)text=opts[i]||'';}
+return {raw,code,text};
+}
+
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),firstAnswerChar=answerNorm.charAt(0),answerRest=answerNorm.slice(1).trim(),answerCode=(['A','B','C','D'].includes(firstAnswerChar)&&(answerNorm.length===1||[':', '.', '-', ')'].includes(answerRest.charAt(0))))?firstAnswerChar:'',answerText=answerCode?answerRest.slice(1).trim():answerNorm,themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(answerCode==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerText)})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),answerSpec=getAnswerSpec(x),answerCode=answerSpec.code,answerText=answerSpec.text,themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(answerCode==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===String(answerText).trim().toUpperCase())})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h='';
 if(settings.gameType==='team') h+='<div id="teamArena" class="teamArena"></div>';
@@ -356,7 +368,7 @@ if(settings.gameType==='team'){
   return;
 }
 if(settings.mode!=='click'){
-  document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(!revealed){document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)}else next()});
+  document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(revealed)return;const selected=document.querySelector('.answer.selected');if(selected===b){reveal(b);return}document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)});
 }
 if(settings.mode==='click'){
   document.querySelectorAll('.answer').forEach(b=>b.onclick=e=>{
@@ -405,20 +417,18 @@ if(settings.gameType==='team'){
 }
 
 if(revealed)return;revealed=true;clearInterval(timer);
-let rawAnswer=String(qs[idx]?.ans??'').trim(),normAnswer=rawAnswer.toUpperCase();
+const answerSpec=getAnswerSpec(qs[idx]);
+const rawAnswer=answerSpec.raw;
 const answerMatches=b=>{
   if(!b)return false;
   const letter=String(b.dataset.letter||'').trim().toUpperCase();
   const text=String(b.dataset.text||'').trim().toUpperCase();
-  const first=normAnswer.charAt(0);
-  const rest=normAnswer.slice(1).trim();
-  const code=(['A','B','C','D'].includes(first)&&(normAnswer.length===1||[':', '.', '-', ')'].includes(rest.charAt(0))))?first:'';
-  const answerText=code?rest.slice(1).trim():normAnswer;
-  return (code!==''&&letter===code) || (text!==''&&text===answerText);
+  const answerText=String(answerSpec.text||'').trim().toUpperCase();
+  return (answerSpec.code!==''&&letter===answerSpec.code) || (text!==''&&text===answerText);
 };
 let correct=[...document.querySelectorAll('.answer')].find(answerMatches) || document.querySelector('.answer[data-correct="true"]');
 if(!correct){
-  let raw=String(qs[idx]?.ans??'').trim();
+  let raw=String(answerSpec.raw||'').trim();
   if(raw){
     let isWrong=!!chosen && !answerMatches(chosen);
     clearInterval(timer);
@@ -444,7 +454,7 @@ if(isWrong){
   beep(1200,.12);setTimeout(()=>beep(1500,.16),120);
 }
 let overlay=document.createElement('div');overlay.className='revealOverlay';
-overlay.innerHTML=`<div class="revealBox"><div class="label">${isWrong?'❌ CHƯA ĐÚNG':'🎉 ĐÁP ÁN ĐÚNG 🎉'}</div>${isWrong?'<div style="font-size:28px;font-weight:900;color:var(--danger);margin:8px 0 18px">Bạn chọn chưa đúng!</div>':''}<div class="bigLetter">${correct.dataset.letter}</div><div class="answerText">${correct.dataset.text}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click vào màn hình hoặc nút để sang câu tiếp theo</div></div>`;
+overlay.innerHTML=`<div class="revealBox"><div class="label">${isWrong?'❌ CHƯA ĐÚNG':'🎉 ĐÁP ÁN ĐÚNG 🎉'}</div>${isWrong?'<div style="font-size:28px;font-weight:900;color:var(--danger);margin:8px 0 18px">Bạn chọn chưa đúng!</div>':''}<div class="bigLetter">${esc(correct.dataset.letter)}</div><div class="answerText">${esc(correct.dataset.text)}</div><button id="overlayNext" class="btn primary" style="font-size:20px;padding:14px 24px">➡️ Câu tiếp theo</button><div class="hint">Click vào màn hình hoặc nút để sang câu tiếp theo</div></div>`;
 $('playPage').appendChild(overlay);if(!isWrong)celebrate();
 const goNext=()=>{clearTimeout(nextTimer);overlay.remove();next()};
 overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext'))goNext()};
