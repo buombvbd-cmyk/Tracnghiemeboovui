@@ -70,6 +70,9 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 .adminNote{padding:13px 15px;border-radius:14px;background:#f4f5ff;color:#59627a;font-size:13px;margin:16px 0}
 @media(max-width:560px){.adminForm{grid-template-columns:1fr}.adminForm .full{grid-column:auto}}
 
+
+/* ===== ADMIN ACCOUNT MANAGEMENT ===== */
+.adminUsers{margin-top:20px}.adminUsersHead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.adminSearch{width:100%;padding:12px 14px;border:1px solid #dfe3ed;border-radius:12px;margin-bottom:12px}.userTable{width:100%;border-collapse:collapse}.userTable th,.userTable td{padding:12px 10px;border-bottom:1px solid #eef0f5;text-align:left;vertical-align:middle}.userTable th{font-size:13px;color:#697187;background:#fafbff}.statusDot{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}.statusOn{background:#eafff4;color:#08764c}.statusOff{background:#fff0f2;color:#c73546}.rolePill{padding:6px 9px;border-radius:999px;background:#f0f1ff;color:var(--p);font-size:12px;font-weight:900}.userActions{display:flex;gap:6px;flex-wrap:wrap}.miniBtn{border:0;border-radius:9px;padding:7px 10px;font-weight:800;cursor:pointer}.miniEdit{background:#eef7ff;color:#1261a0}.miniLock{background:#fff5e6;color:#a86500}.miniUnlock{background:#eafff4;color:#08764c}.miniDanger{background:#fff0f2;color:#c73546}.adminLoading{text-align:center;padding:25px;color:var(--muted)}@media(max-width:850px){.userTable{display:block;overflow-x:auto;white-space:nowrap}.userTable th,.userTable td{padding:10px 8px}}
 </style>
 </head>
 <body>
@@ -98,33 +101,23 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 <div id="adminPage" class="container hidden">
 <div class="adminPanel">
   <div class="adminHead">
-    <div><h2>👑 Quản trị tài khoản</h2><p class="muted" style="margin:6px 0 0">Tạo tài khoản đăng nhập cho giáo viên.</p></div>
+    <div><h2>👑 Quản trị tài khoản</h2><p class="muted" style="margin:6px 0 0">Kiểm soát tài khoản đăng nhập của giáo viên.</p></div>
     <button class="btn soft" onclick="home()">← Quay lại</button>
   </div>
   <div class="card">
-    <div class="adminNote">🔐 Chỉ tài khoản <b>ADMIN</b> mới được mở khu vực này. Mật khẩu giáo viên được gửi trực tiếp cho giáo viên sau khi tạo.</div>
+    <div class="adminNote">🔐 Chỉ tài khoản <b>ADMIN</b> mới được quản lý. Khóa tài khoản sẽ chặn đăng nhập; xóa tài khoản sẽ xóa tài khoản khỏi hệ thống.</div>
     <form id="teacherCreateForm" class="adminForm">
-      <div>
-        <label for="teacherName">👨‍🏫 Họ và tên</label>
-        <input id="teacherName" type="text" placeholder="Ví dụ: Nguyễn Văn A" required>
-      </div>
-      <div>
-        <label for="teacherEmail">📧 Email đăng nhập</label>
-        <input id="teacherEmail" type="email" placeholder="giaovien@truongxanh.edu.vn" required>
-      </div>
-      <div>
-        <label for="teacherPassword">🔒 Mật khẩu tạm</label>
-        <input id="teacherPassword" type="password" minlength="6" placeholder="Tối thiểu 6 ký tự" required>
-      </div>
-      <div>
-        <label for="teacherPassword2">🔒 Nhập lại mật khẩu</label>
-        <input id="teacherPassword2" type="password" minlength="6" placeholder="Nhập lại mật khẩu" required>
-      </div>
-      <div class="full">
-        <button id="createTeacherBtn" class="btn primary" type="submit">＋ Tạo tài khoản giáo viên</button>
-        <div id="adminMsg" class="adminMsg"></div>
-      </div>
+      <div><label for="teacherName">👨‍🏫 Họ và tên</label><input id="teacherName" type="text" placeholder="Ví dụ: Nguyễn Văn A" required></div>
+      <div><label for="teacherEmail">📧 Email đăng nhập</label><input id="teacherEmail" type="email" placeholder="giaovien@truongxanh.edu.vn" required></div>
+      <div><label for="teacherPassword">🔒 Mật khẩu tạm</label><input id="teacherPassword" type="password" minlength="6" placeholder="Tối thiểu 6 ký tự" required></div>
+      <div><label for="teacherPassword2">🔒 Nhập lại mật khẩu</label><input id="teacherPassword2" type="password" minlength="6" placeholder="Nhập lại mật khẩu" required></div>
+      <div class="full"><button id="createTeacherBtn" class="btn primary" type="submit">＋ Tạo tài khoản giáo viên</button><div id="adminMsg" class="adminMsg"></div></div>
     </form>
+  </div>
+  <div class="card adminUsers">
+    <div class="adminUsersHead"><div><h2 style="margin:0">👥 Danh sách tài khoản</h2><p class="muted" style="margin:5px 0 0">Admin có thể sửa tên, khóa/mở khóa, đổi mật khẩu hoặc xóa giáo viên.</p></div><button class="btn soft" onclick="loadAdminUsers()">🔄 Làm mới</button></div>
+    <input id="adminUserSearch" class="adminSearch" type="search" placeholder="🔎 Tìm theo họ tên hoặc email..." oninput="renderAdminUsers()">
+    <div id="adminUsersWrap" class="adminLoading">Đang tải danh sách tài khoản...</div>
   </div>
 </div>
 </div>
@@ -224,32 +217,70 @@ async function initQuizAuth(){
   });
 }
 
+async function adminInvoke(action,payload={}){
+  const {data,error}=await sb.functions.invoke('manage-teachers',{body:{action,...payload}});
+  if(error) throw error;
+  if(!data?.ok) throw new Error(data?.message||'Không thể thực hiện thao tác.');
+  return data;
+}
+let adminUsers=[];
+async function loadAdminUsers(){
+  if(!currentProfile||currentProfile.role!=='admin')return;
+  const wrap=$('adminUsersWrap'); if(wrap)wrap.innerHTML='<div class="adminLoading">⏳ Đang tải danh sách tài khoản...</div>';
+  try{const data=await adminInvoke('list');adminUsers=data.users||[];renderAdminUsers();}
+  catch(err){console.error(err);if(wrap)wrap.innerHTML='<div class="adminMsg err">❌ '+esc(err?.message||'Không tải được danh sách tài khoản.')+'</div>';}
+}
+function renderAdminUsers(){
+  const wrap=$('adminUsersWrap');if(!wrap)return;
+  const q=String($('adminUserSearch')?.value||'').trim().toLowerCase();
+  const rows=adminUsers.filter(u=>(u.full_name+' '+u.email).toLowerCase().includes(q));
+  if(!rows.length){wrap.innerHTML='<div class="adminLoading">Không tìm thấy tài khoản.</div>';return}
+  wrap.innerHTML='<table class="userTable"><thead><tr><th>Họ tên</th><th>Email</th><th>Quyền</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead><tbody>'+rows.map(u=>{
+    const date=u.created_at?new Date(u.created_at).toLocaleDateString('vi-VN'):'—';
+    const isAdmin=u.role==='admin';
+    return '<tr><td><b>'+esc(u.full_name||'Chưa đặt tên')+'</b></td><td>'+esc(u.email||'')+'</td><td><span class="rolePill">'+(isAdmin?'👑 ADMIN':'👨‍🏫 GIÁO VIÊN')+'</span></td><td><span class="statusDot '+(u.active?'statusOn':'statusOff')+'">'+(u.active?'🟢 Hoạt động':'🔴 Đã khóa')+'</span></td><td>'+date+'</td><td><div class="userActions">'+(isAdmin?'<span class="muted">Bảo vệ ADMIN</span>':'<button class="miniBtn miniEdit" onclick="adminEditName(\''+u.id+'\')">✏️ Tên</button><button class="miniBtn miniEdit" onclick="adminResetPassword(\''+u.id+'\')">🔑 Mật khẩu</button><button class="miniBtn '+(u.active?'miniLock':'miniUnlock')+'" onclick="adminToggleUser(\''+u.id+'\','+(u.active?'false':'true')+')">'+(u.active?'🔒 Khóa':'🔓 Mở khóa')+'</button><button class="miniBtn miniDanger" onclick="adminDeleteUser(\''+u.id+'\')">🗑️ Xóa</button>')+'</div></td></tr>';
+  }).join('')+'</tbody></table>';
+}
+async function adminEditName(id){
+  const u=adminUsers.find(x=>x.id===id);if(!u)return;
+  const name=prompt('Nhập họ tên mới:',u.full_name||'');if(name===null)return;
+  const v=name.trim();if(!v){alert('Họ tên không được để trống.');return}
+  try{await adminInvoke('update_name',{user_id:id,full_name:v});alert('✅ Đã cập nhật họ tên.');await loadAdminUsers();}catch(e){alert('❌ '+(e?.message||'Không cập nhật được.'))}
+}
+async function adminResetPassword(id){
+  const u=adminUsers.find(x=>x.id===id);if(!u)return;
+  const p=prompt('Nhập mật khẩu mới cho '+(u.email||'tài khoản')+' (tối thiểu 6 ký tự):');if(p===null)return;
+  if(p.length<6){alert('❌ Mật khẩu phải có ít nhất 6 ký tự.');return}
+  try{await adminInvoke('reset',{user_id:id,password:p});alert('✅ Đã đổi mật khẩu.');}catch(e){alert('❌ '+(e?.message||'Không đổi được mật khẩu.'))}
+}
+async function adminToggleUser(id,active){
+  const u=adminUsers.find(x=>x.id===id);if(!u)return;
+  const action=active?'mở khóa':'khóa';
+  if(!confirm('Bạn có chắc muốn '+action+' tài khoản '+(u.email||'này')+'?'))return;
+  try{await adminInvoke('toggle',{user_id:id,active});alert('✅ Đã '+action+' tài khoản.');await loadAdminUsers();}catch(e){alert('❌ '+(e?.message||'Không thể '+action+' tài khoản.'))}
+}
+async function adminDeleteUser(id){
+  const u=adminUsers.find(x=>x.id===id);if(!u)return;
+  if(!confirm('XÓA tài khoản '+(u.email||'này')+'?\n\nHành động này không thể hoàn tác.'))return;
+  if(!confirm('Xác nhận lần cuối: Xóa tài khoản này?'))return;
+  try{await adminInvoke('delete',{user_id:id});alert('✅ Đã xóa tài khoản.');await loadAdminUsers();}catch(e){alert('❌ '+(e?.message||'Không thể xóa tài khoản.'))}
+}
 async function createTeacherAccount(e){
   e.preventDefault();
   if(!currentProfile || currentProfile.role!=='admin') return;
   const name=$('teacherName').value.trim(), email=$('teacherEmail').value.trim().toLowerCase();
   const password=$('teacherPassword').value, password2=$('teacherPassword2').value;
   const btn=$('createTeacherBtn'), msg=$('adminMsg');
-  msg.textContent=''; msg.className='adminMsg';
+  msg.textContent='';msg.className='adminMsg';
   if(password.length<6){msg.textContent='❌ Mật khẩu phải có ít nhất 6 ký tự.';msg.classList.add('err');return}
   if(password!==password2){msg.textContent='❌ Hai mật khẩu không giống nhau.';msg.classList.add('err');return}
-  btn.disabled=true; btn.textContent='⏳ Đang tạo tài khoản...';
+  btn.disabled=true;btn.textContent='⏳ Đang tạo tài khoản...';
   try{
-    const {data,error}=await sb.functions.invoke('swift-service',{
-      body:{full_name:name,email,password}
-    });
-    if(error) throw error;
-    if(!data?.ok) throw new Error(data?.message||'Không thể tạo tài khoản.');
-    msg.textContent='✅ Đã tạo tài khoản giáo viên: '+email;
-    msg.classList.add('ok');
-    $('teacherCreateForm').reset();
-  }catch(err){
-    console.error(err);
-    msg.textContent='❌ '+(err?.message||'Không thể tạo tài khoản. Hãy kiểm tra Edge Function create-teacher.');
-    msg.classList.add('err');
-  }finally{
-    btn.disabled=false; btn.textContent='＋ Tạo tài khoản giáo viên';
-  }
+    const {data,error}=await sb.functions.invoke('swift-service',{body:{full_name:name,email,password}});
+    if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Không thể tạo tài khoản.');
+    msg.textContent='✅ Đã tạo tài khoản giáo viên: '+email;msg.classList.add('ok');$('teacherCreateForm').reset();await loadAdminUsers();
+  }catch(err){console.error(err);msg.textContent='❌ '+(err?.message||'Không thể tạo tài khoản.');msg.classList.add('err')}
+  finally{btn.disabled=false;btn.textContent='＋ Tạo tài khoản giáo viên'}
 }
 document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -286,7 +317,7 @@ function teamWrong(chosen){let name=teamList.find(t=>t.id===teamTurn)?.name||'Đ
 function teamTimeout(){if(settings.gameType!=='team')return;clearInterval(timer);let name=teamList.find(t=>t.id===teamTurn)?.name||'Đội';beep(250,.25);let overlay=document.createElement('div');overlay.className='revealOverlay';overlay.innerHTML='<div class="revealBox"><div class="label">⏰ HẾT THỜI GIAN</div><div class="teamWrongFlash">'+esc(name)+' chưa trả lời kịp.</div><div class="answerText" style="font-size:28px">Câu hỏi vẫn còn hiệu lực.</div><button id="overlayContinue" class="btn primary" style="font-size:20px;padding:14px 24px">🎯 Chọn đội khác</button><div class="hint">Đáp án đúng chưa được hiển thị.</div></div>';$('playPage').appendChild(overlay);overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayContinue')){overlay.remove();teamTurn=null;renderTeamControls();startTimer()}}}
 
 function openTeacher(){ $('homePage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage')?.classList.add('hidden');$('teacherPage').classList.remove('hidden'); if(!qs.length){}}
-function openAdmin(){if(!currentProfile||currentProfile.role!=='admin'){alert('Bạn không có quyền quản trị.');return}$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage').classList.remove('hidden');$('adminMsg').textContent='';$('adminMsg').className='adminMsg';}
+function openAdmin(){if(!currentProfile||currentProfile.role!=='admin'){alert('Bạn không có quyền quản trị.');return}$('homePage').classList.add('hidden');$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage').classList.remove('hidden');$('adminMsg').textContent='';$('adminMsg').className='adminMsg';loadAdminUsers();}
 
 function renderSets(){let el=$('sets');if(!sets.length){el.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center;padding:45px">📚<h2>Chưa có bộ câu hỏi</h2><p class="muted">Hãy tạo bộ đầu tiên trong khu vực giáo viên.</p></div>';return}el.innerHTML=sets.map((s,n)=>`<article class="set"><div class="setIcon">${['🌟','🚀','🧠','🏆','📖'][n%5]}</div><h3>${esc(s.name)}</h3><div class="meta">${s.questions.length} câu hỏi<br>Thời gian: ${s.settings.time==0?'Không giới hạn':s.settings.time+' giây'}<br>Âm thanh: ${s.settings.sound==='off'?'Tắt':'Bật'}<br>Đáp án: A–${'ABCD'[(Number(s.settings.answerCount||4))-1]}</div><div class="setActions"><button class="btn primary" onclick="playSet(${n})">▶ Chơi</button><button class="btn soft" onclick="editSet(${n})">⚙ Sửa</button><button class="btn danger del" onclick="delSet(${n})">Xóa</button></div></article>`).join('')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
