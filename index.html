@@ -341,14 +341,15 @@ function getAnswerSpec(x){
 const raw=String(x?.ans??'').trim();
 const opts=Array.isArray(x?.opts)?x.opts.map(v=>String(v??'').trim()):[];
 let code='',text=raw;
-const norm=s=>String(s??'').trim().replace(/\s+/g,' ').toUpperCase();
-const stripLetter=s=>norm(s).replace(/^[ABCD]\s*[:.)-]\s*/,'');
+const clean=s=>String(s??'').normalize('NFC').trim().toUpperCase();
+const key=s=>clean(s).replace(/\s+/g,'').replace(/[._\-–—:;,)]+/g,'');
+const stripLetter=s=>clean(s).replace(/^[ABCD]\s*[:.)-]\s*/,'');
 const m=raw.match(/^([ABCD])\s*[:.)-]\s*(.+)$/i);
 if(m){code=m[1].toUpperCase();text=m[2].trim();}
 else if(/^[ABCD]$/i.test(raw)){code=raw.toUpperCase();text='';}
 if(text){
-  const target=stripLetter(text);
-  const i=opts.findIndex(v=>stripLetter(v)===target);
+  const target=key(stripLetter(text));
+  const i=opts.findIndex(v=>key(stripLetter(v))===target);
   if(i>=0){code='ABCD'[i];text=opts[i].trim();}
 }
 if(code && !text && /^[ABCD]$/.test(code)){
@@ -400,13 +401,14 @@ function reveal(chosen=null){
 
 if(settings.gameType==='team'){
   if(!chosen)return teamTimeout();
+  const teamSpec=getAnswerSpec(qs[idx]);
   const answerMatchesTeam=b=>{
     if(!b)return false;
-    const letter=String(b.dataset.letter||'').trim().toUpperCase(),text=String(b.dataset.text||'').trim().toUpperCase();
-    const norm=String(qs[idx]?.ans??'').trim().toUpperCase(),first=norm.charAt(0),rest=norm.slice(1).trim();
-    const code=(['A','B','C','D'].includes(first)&&(norm.length===1||[':', '.', '-', ')'].includes(rest.charAt(0))))?first:'';
-    const at=code?rest.slice(1).trim():norm;
-    return (code&&letter===code)||(text&&text===at);
+    const letter=String(b.dataset.letter||'').trim().toUpperCase();
+    const text=String(b.dataset.text||'').trim();
+    const target=String(teamSpec.text||'').normalize('NFC').trim().toUpperCase().replace(/\s+/g,'').replace(/[._\-–—:;,)]+/g,'');
+    const bt=text.normalize('NFC').trim().toUpperCase().replace(/\s+/g,'').replace(/[._\-–—:;,)]+/g,'');
+    return (teamSpec.code&&letter===teamSpec.code)||(target&&bt===target);
   };
   const correctTeam=[...document.querySelectorAll('.answer')].find(answerMatchesTeam)||document.querySelector('.answer[data-correct="true"]');
   if(!correctTeam)return teamWrong(chosen);
