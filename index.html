@@ -98,6 +98,9 @@ let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}<
 if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
 h+=`<div class="answers">${ops.map((o,n)=>`<button class="answer" data-correct="${o.correct}" data-letter="${'ABCD'[n]}" data-text="${esc(o.t)}"><span class="letter">${'ABCD'[n]}</span>${esc(o.t)}</button>`).join('')}</div><div class="center"><button id="next" class="btn primary hidden">➡️ Câu tiếp theo</button></div>`;
 $('quiz').innerHTML=h;
+if(settings.mode!=='click'){
+  document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(!revealed){document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)}else next()});
+}
 if(settings.mode==='click'){
   $('quiz').onclick=e=>{
     if(e.target.closest('#next'))return;
