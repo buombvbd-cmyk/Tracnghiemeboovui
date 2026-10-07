@@ -86,7 +86,7 @@ showQuestion();
 }
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:x.ans==='ABCD'[n]})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:String(x.ans||'').trim().toUpperCase()==='ABCD'[n]})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
 if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
@@ -109,7 +109,11 @@ function clock(){let c=$('clock');c.textContent=left?`⏱️ ${left}s`:'∞';c.c
 function reveal(){
 if(revealed)return;revealed=true;clearInterval(timer);
 let correct=document.querySelector('.answer[data-correct="true"]');
-if(!correct){next();return}
+if(!correct){
+  clearInterval(timer);
+  alert('Không tìm thấy đáp án đúng trong dữ liệu câu hỏi. Hãy kiểm tra cột “Đáp án đúng” trong file Excel.');
+  return;
+}
 document.querySelectorAll('.answer').forEach(b=>{if(b!==correct)b.classList.add('wrong');});
 correct.classList.add('correct');
 beep(1200,.12);setTimeout(()=>beep(1500,.16),120);
@@ -119,7 +123,6 @@ $('playPage').appendChild(overlay);celebrate();
 const goNext=()=>{clearTimeout(nextTimer);overlay.remove();next()};
 overlay.onclick=e=>{if(e.target===overlay||e.target.closest('#overlayNext'))goNext()};
 $('next')?.classList.remove('hidden');if($('next'))$('next').onclick=goNext;
-if(settings.mode==='click') nextTimer=setTimeout(goNext,3000);
 }
 function celebrate(){
 for(let i=0;i<70;i++){let s=document.createElement('i');s.className='confetti';s.style.left=(Math.random()*100)+'vw';s.style.setProperty('--dx',((Math.random()-.5)*240)+'px');s.style.animationDelay=(Math.random()*.25)+'s';s.style.transform='rotate('+Math.random()*360+'deg)';s.style.background='hsl('+Math.random()*360+' 90% 55%)';document.body.appendChild(s);setTimeout(()=>s.remove(),1900)}
