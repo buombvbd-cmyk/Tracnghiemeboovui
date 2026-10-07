@@ -19,7 +19,32 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 .revealBox .answerText{font-size:clamp(30px,5vw,64px);font-weight:950;line-height:1.12;margin:18px auto;max-width:850px}
 .revealBox .hint{color:var(--muted);font-weight:800;margin-top:18px}
 .confetti{position:fixed;top:-20px;width:10px;height:18px;z-index:110;pointer-events:none;animation:confettiFall 1.6s linear forwards}
-@keyframes pulseStart{50%{transform:scale(1.08)}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.quiz.dynamicTheme{--t1:#5b5ce2;--t2:#8b5cf6;--t3:#eef0ff;--t4:#fff}
+.quiz.dynamicTheme .question{color:var(--t1);text-shadow:0 4px 18px color-mix(in srgb,var(--t1) 25%,transparent);animation:questionIn .55s cubic-bezier(.16,1,.3,1)}
+.quiz.dynamicTheme .answers{animation:answersIn .6s ease both}
+.quiz.dynamicTheme .answer{border-color:color-mix(in srgb,var(--t1) 28%,#fff);background:linear-gradient(135deg,#fff,var(--t3));box-shadow:0 10px 25px color-mix(in srgb,var(--t1) 13%,transparent);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.quiz.dynamicTheme .answer:hover{transform:translateY(-5px) scale(1.01);border-color:var(--t1);box-shadow:0 16px 35px color-mix(in srgb,var(--t1) 25%,transparent)}
+.quiz.dynamicTheme .letter{background:linear-gradient(135deg,var(--t1),var(--t2));color:#fff;box-shadow:0 5px 15px color-mix(in srgb,var(--t1) 30%,transparent)}
+.quiz.dynamicTheme .qmeta{color:var(--t1)}
+.quiz.dynamicTheme .qmeta span:first-child{background:var(--t3);padding:7px 12px;border-radius:999px}
+.quiz.dynamicTheme.theme-sunset{--t1:#f05d23;--t2:#f2a900;--t3:#fff0df}
+.quiz.dynamicTheme.theme-ocean{--t1:#087ea4;--t2:#16b8a6;--t3:#e5fbff}
+.quiz.dynamicTheme.theme-candy{--t1:#d946a8;--t2:#7c4dff;--t3:#fff0fb}
+.quiz.dynamicTheme.theme-forest{--t1:#138a5b;--t2:#55b84b;--t3:#ebfff4}
+.quiz.dynamicTheme.theme-sky{--t1:#2563eb;--t2:#06b6d4;--t3:#eaf7ff}
+.quiz.dynamicTheme.theme-gold{--t1:#b77900;--t2:#eab308;--t3:#fff8df}
+.quiz.dynamicTheme.effect-pop .answer{animation:answerPop .5s both}
+.quiz.dynamicTheme.effect-slide .answer{animation:answerSlide .55s both}
+.quiz.dynamicTheme.effect-bounce .answer{animation:answerBounce .65s both}
+.quiz.dynamicTheme.effect-glow .answer{animation:answerGlow .9s both}
+@keyframes pulseStart{50%{transform:scale(1.08)}}
+@keyframes questionIn{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes answersIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes answerPop{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+@keyframes answerSlide{from{opacity:0;transform:translateX(-25px)}to{opacity:1;transform:none}}
+@keyframes answerBounce{0%{opacity:0;transform:translateY(25px)}70%{transform:translateY(-6px)}100%{opacity:1;transform:none}}
+@keyframes answerGlow{from{opacity:0;box-shadow:0 0 0 transparent}to{opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes answerBoom{0%{transform:scale(.45) rotate(-3deg);opacity:0}70%{transform:scale(1.05) rotate(1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 @keyframes confettiFall{to{transform:translate3d(var(--dx),110vh,0) rotate(720deg);opacity:0}}
 @media(max-width:850px){.sets,.setup{grid-template-columns:1fr}.setup>div{min-width:0}.card{padding:20px}.answers,.settings{grid-template-columns:1fr}.row{grid-template-columns:40px 1fr 80px}.row .del{display:none}}@media(max-width:560px){nav{padding:0 14px}.logo{font-size:18px}.navBtns .soft{display:none}.hero h1{font-size:36px}.container{padding:22px 14px}.quiz{padding:20px}.question{font-size:30px}}
@@ -86,12 +111,14 @@ showQuestion();
 }
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),ops=x.opts.slice(0,count).map((t,n)=>({t,correct:(/^[ABCD]$/.test(answerNorm)&&answerNorm==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,correct:(/^[ABCD]$/.test(answerNorm)&&answerNorm==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
 if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
 h+=`<div class="answers">${ops.map((o,n)=>`<button class="answer" data-correct="${o.correct}" data-letter="${'ABCD'[n]}" data-text="${esc(o.t)}"><span class="letter">${'ABCD'[n]}</span>${esc(o.t)}</button>`).join('')}</div><div class="center"><button id="next" class="btn primary hidden">➡️ Câu tiếp theo</button></div>`;
 $('quiz').innerHTML=h;
+$('quiz').className='quiz dynamicTheme '+theme+' '+effect;
+document.querySelectorAll('.answer').forEach((b,n)=>b.style.animationDelay=(n*.07)+'s');
 if(settings.mode!=='click'){
   document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>{if(!revealed){document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');beep(520,.07)}else next()});
 }
