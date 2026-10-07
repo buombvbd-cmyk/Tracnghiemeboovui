@@ -340,16 +340,16 @@ showQuestion();
 function getAnswerSpec(x){
 const raw=String(x?.ans??'').trim();
 const opts=Array.isArray(x?.opts)?x.opts.map(v=>String(v??'').trim()):[];
+const clean=s=>String(s??'').normalize('NFKC').trim().toUpperCase();
+const loose=s=>clean(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^A-Z0-9]+/g,'');
 let code='',text=raw;
-const clean=s=>String(s??'').normalize('NFC').trim().toUpperCase();
-const key=s=>clean(s).replace(/\s+/g,'').replace(/[._\-–—:;,)]+/g,'');
-const stripLetter=s=>clean(s).replace(/^[ABCD]\s*[:.)-]\s*/,'');
-const m=raw.match(/^([ABCD])\s*[:.)-]\s*(.+)$/i);
+const m=raw.match(/^([ABCD])\s*[:.)-]\s*(.*)$/i);
 if(m){code=m[1].toUpperCase();text=m[2].trim();}
 else if(/^[ABCD]$/i.test(raw)){code=raw.toUpperCase();text='';}
-if(text){
-  const target=key(stripLetter(text));
-  const i=opts.findIndex(v=>key(stripLetter(v))===target);
+if(!code && text){
+  const exact=opts.findIndex(v=>clean(v)===clean(text));
+  const looseIndex=exact<0?opts.findIndex(v=>loose(v)===loose(text)):-1;
+  const i=exact>=0?exact:looseIndex;
   if(i>=0){code='ABCD'[i];text=opts[i].trim();}
 }
 if(code && !text && /^[ABCD]$/.test(code)){
@@ -358,10 +358,20 @@ if(code && !text && /^[ABCD]$/.test(code)){
 }
 return {raw,code,text};
 }
+function getCorrectAnswerIndex(x){
+const spec=getAnswerSpec(x);
+if(spec.code && /^[ABCD]$/.test(spec.code)) return 'ABCD'.indexOf(spec.code);
+const opts=Array.isArray(x?.opts)?x.opts:[];
+const clean=s=>String(s??'').normalize('NFKC').trim().toUpperCase();
+const loose=s=>clean(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^A-Z0-9]+/g,'');
+let i=opts.findIndex(v=>clean(v)===clean(spec.raw));
+if(i<0)i=opts.findIndex(v=>loose(v)===loose(spec.raw));
+return i;
+}
 
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),answerSpec=getAnswerSpec(x),answerCode=answerSpec.code,answerText=answerSpec.text,themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(answerCode==='ABCD'[n])})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),answerSpec=getAnswerSpec(x),correctIndex=getCorrectAnswerIndex(x),answerCode=correctIndex>=0?'ABCD'[correctIndex]:'',answerText=answerSpec.text,themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(answerCode==='ABCD'[n])})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h='';
 if(settings.gameType==='team') h+='<div id="teamArena" class="teamArena"></div>';
@@ -430,14 +440,13 @@ if(settings.gameType==='team'){
 if(revealed)return;revealed=true;clearInterval(timer);
 const answerSpec=getAnswerSpec(qs[idx]);
 const rawAnswer=answerSpec.raw;
+const correctIndex=getCorrectAnswerIndex(qs[idx]);
+const correctLetter=correctIndex>=0?'ABCD'[correctIndex]:'';
 const answerMatches=b=>{
   if(!b)return false;
-  const letter=String(b.dataset.letter||'').trim().toUpperCase();
-  const text=String(b.dataset.text||'').trim().toUpperCase();
-  const answerText=String(answerSpec.text||'').trim().toUpperCase();
-  return (answerSpec.code!==''&&letter===answerSpec.code) || (text!==''&&text===answerText);
+  return String(b.dataset.letter||'').trim().toUpperCase()===correctLetter;
 };
-let correct=[...document.querySelectorAll('.answer')].find(answerMatches) || document.querySelector('.answer[data-correct="true"]');
+let correct=[...document.querySelectorAll('.answer')].find(answerMatches);
 if(!correct){
   let raw=String(answerSpec.raw||'').trim();
   if(raw){
