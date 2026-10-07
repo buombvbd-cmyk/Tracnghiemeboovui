@@ -111,7 +111,7 @@ showQuestion();
 }
 function showQuestion(){
 if(revealed)return;
-let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(/^[ABCD]$/.test(answerNorm)&&answerNorm==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)})).filter(o=>o.t.trim()!=='');
+let x=qs[idx],count=Number(settings.answerCount||4),answerRaw=String(x.ans??'').trim(),answerNorm=answerRaw.toUpperCase(),answerCode=(answerNorm.match(/^([ABCD])(?:\\s*[:.\\-)]\\s*.*)?$/)||[])[1]||'',themeSet=['theme-sunset','theme-ocean','theme-candy','theme-forest','theme-sky','theme-gold'],effectSet=['effect-pop','effect-slide','effect-bounce','effect-glow'],theme=themeSet[Math.floor(Math.random()*themeSet.length)],effect=effectSet[Math.floor(Math.random()*effectSet.length)],ops=x.opts.slice(0,count).map((t,n)=>({t,letter:'ABCD'[n],correct:(answerCode==='ABCD'[n])||(String(t).trim()!==''&&String(t).trim().toUpperCase()===answerNorm)||(answerNorm.includes(':')&&String(t).trim().toUpperCase()===answerNorm.split(':').slice(1).join(':').trim())})).filter(o=>o.t.trim()!=='');
 if(settings.shuffleA==='yes')ops=shuffle(ops);
 let h=`<div class="qmeta"><span>CÂU ${idx+1}</span><span>${idx+1}/${qs.length}</span></div><div class="question">${esc(x.q)}</div>`;
 if(x.img)h+=`<img class="qimage" src="${esc(x.img)}">`;
@@ -146,13 +146,15 @@ const answerMatches=b=>{
   if(!b)return false;
   const letter=String(b.dataset.letter||'').trim().toUpperCase();
   const text=String(b.dataset.text||'').trim().toUpperCase();
-  return (/^[A-Z]$/.test(normAnswer)&&letter===normAnswer) || (text!==''&&text===normAnswer);
+  const code=(normAnswer.match(/^([A-Z])(?:\\s*[:.\\-)]\\s*.*)?$/)||[])[1]||'';
+  const answerText=normAnswer.includes(':')?normAnswer.split(':').slice(1).join(':').trim():normAnswer.replace(/^[A-Z]\\s*[-.)]\\s*/,'').trim();
+  return (code!==''&&letter===code) || (text!==''&&text===answerText);
 };
 let correct=[...document.querySelectorAll('.answer')].find(answerMatches) || document.querySelector('.answer[data-correct="true"]');
 if(!correct){
   let raw=String(qs[idx]?.ans??'').trim();
   if(raw){
-    let isWrong=!!chosen;
+    let isWrong=!!chosen && !answerMatches(chosen);
     clearInterval(timer);
     if(isWrong){beep(220,.18);setTimeout(()=>beep(160,.22),120)}else{beep(1200,.12);setTimeout(()=>beep(1500,.16),120)}
     let overlay=document.createElement('div');overlay.className='revealOverlay';
