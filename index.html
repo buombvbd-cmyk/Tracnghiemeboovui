@@ -347,7 +347,8 @@ const m=raw.match(/^([A-Za-z])\s*[:.)-]\s*(.+)$/);
 if(m){code=m[1].toUpperCase();text=m[2].trim();}
 else if(/^[A-Za-z]$/.test(raw)){code=raw.toUpperCase();text='';}
 if(text){
-  const i=opts.findIndex(v=>v.trim().toUpperCase()===text.toUpperCase());
+  const norm=s=>String(s??'').trim().replace(/\\s+/g,' ').toUpperCase();
+  const i=opts.findIndex(v=>norm(v)===norm(text));
   if(i>=0){code='ABCD'[i];text=opts[i].trim();}
 }
 if(code && !text && /^[ABCD]$/.test(code)){
