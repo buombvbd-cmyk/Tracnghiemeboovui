@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiz School V2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 :root{--p:#5b5ce2;--p2:#8b5cf6;--bg:#f5f7ff;--ink:#182033;--muted:#727b91;--line:#e7eaf3;--ok:#16a36e;--danger:#ef5968}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}button,input,select{font:inherit}.hidden{display:none!important}
@@ -321,7 +321,42 @@ function openAdmin(){if(!currentProfile||currentProfile.role!=='admin'){alert('B
 
 function renderSets(){let el=$('sets');if(!sets.length){el.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center;padding:45px">📚<h2>Chưa có bộ câu hỏi</h2><p class="muted">Hãy tạo bộ đầu tiên trong khu vực giáo viên.</p></div>';return}el.innerHTML=sets.map((s,n)=>`<article class="set"><div class="setIcon">${['🌟','🚀','🧠','🏆','📖'][n%5]}</div><h3>${esc(s.name)}</h3><div class="meta">${s.questions.length} câu hỏi<br>Thời gian: ${s.settings.time==0?'Không giới hạn':s.settings.time+' giây'}<br>Âm thanh: ${s.settings.sound==='off'?'Tắt':'Bật'}<br>Đáp án: A–${'ABCD'[(Number(s.settings.answerCount||4))-1]}</div><div class="setActions"><button class="btn primary" onclick="playSet(${n})">▶ Chơi</button><button class="btn soft" onclick="editSet(${n})">⚙ Sửa</button><button class="btn danger del" onclick="delSet(${n})">Xóa</button></div></article>`).join('')}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-$('excel').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=z=>{try{let wb=XLSX.read(z.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});qs=rows.map(r=>({q:String(r['Câu hỏi']||r['Cau hoi']||r.Question||''),img:String(r['Hình ảnh câu hỏi']||r['Hinh anh cau hoi']||r.Image||''),opts:['A','B','C','D'].map(k=>String(r[k]||'')),optImgs:['A','B','C','D'].map(k=>String(r['Hình ảnh '+k]||r['Hinh anh '+k]||r['Image '+k]||'')),ans:String(r['Đáp án đúng']??r['Dap an dung']??r.Answer??'').trim()})).filter(x=>x.q||x.img);$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=`✅ Đã nhập ${qs.length} câu từ ${f.name}`;preview()}catch(e){$('importStatus').textContent='❌ Không đọc được file'}};r.readAsArrayBuffer(f)}
+$('excel').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=async z=>{try{
+let data=z.target.result,wb=XLSX.read(data,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+let embeddedImages={};
+try{
+  const ew=new ExcelJS.Workbook();
+  await ew.xlsx.load(data);
+  const sheet=ew.worksheets[0];
+  const media=ew.model.media||[];
+  const toDataUrl=async imageId=>{
+    const m=media.find(x=>x.index===imageId||x.id===imageId);
+    if(!m)return '';
+    if(m.base64)return 'data:image/'+(m.extension||'png')+';base64,'+m.base64;
+    if(m.buffer){
+      const bytes=m.buffer instanceof ArrayBuffer?new Uint8Array(m.buffer):new Uint8Array(m.buffer.buffer||m.buffer);
+      let bin='';for(let i=0;i<bytes.length;i+=8192)bin+=String.fromCharCode(...bytes.subarray(i,i+8192));
+      return 'data:image/'+(m.extension||'png')+';base64,'+btoa(bin);
+    }
+    return '';
+  };
+  for(const im of sheet.getImages()){
+    const tl=im.range?.tl;
+    const row=Math.floor(Number(tl?.nativeRow??tl?.row??0));
+    const col=Math.floor(Number(tl?.nativeCol??tl?.col??0));
+    const src=await toDataUrl(im.imageId);
+    if(src)embeddedImages[row+':'+col]=src;
+  }
+}catch(imgErr){console.warn('Không đọc được ảnh nhúng trong Excel',imgErr)}
+qs=rows.map((r,rowIndex)=>{
+  const get=(name,alt='')=>String(r[name]??r[alt]??'');
+  const opts=['A','B','C','D'].map(k=>String(r[k]||''));
+  const optImgs=['A','B','C','D'].map((k,n)=>embeddedImages[rowIndex+':'+(7+n)]||get('Hình ảnh '+k,'Hinh anh '+k)||get('Image '+k));
+  const img=embeddedImages[rowIndex+':2']||get('Hình ảnh câu hỏi','Hinh anh cau hoi')||get('Image');
+  return {q:get('Câu hỏi','Cau hoi')||String(r.Question||''),img,opts,optImgs,ans:String(r['Đáp án đúng']??r['Dap an dung']??r.Answer??'').trim()};
+}).filter(x=>x.q||x.img||x.opts.some(Boolean)||x.optImgs.some(Boolean));
+$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=\`✅ Đã nhập \${qs.length} câu từ \${f.name}\`;preview()
+}catch(e){console.error(e);$('importStatus').textContent='❌ Không đọc được file Excel/ảnh nhúng'}};r.readAsArrayBuffer(f)}
 function preview(){$('preview').innerHTML=qs.length?'<h3>👀 Xem trước</h3>'+qs.slice(0,8).map((q,n)=>`<div class="row"><b>${n+1}</b><span>${esc(q.q||'[Câu hỏi hình ảnh]')}</span><span>Đúng: <b>${esc(q.ans)}</b></span><span class="del">${q.img?'🖼️ Hình':''}</span></div>`).join('')+(qs.length>8?`<p class="muted">... và ${qs.length-8} câu khác</p>`:''):''}
 $('time').onchange=()=>$('custom').classList.toggle('hidden',$('time').value!=='custom');
 function getSettings(){let tc=readTeamConfig();return{time:$('time').value==='custom'?Number($('custom').value):Number($('time').value),sound:$('sound').value,timeout:$('timeout').value,shuffleQ:$('shuffleQ').value,shuffleA:$('shuffleA').value,full:$('full').value,answerCount:Number($('answerCount').value),mode:$('mode').value,gameType:$('teamModeCard')?.classList.contains('active')?'team':'individual',teamCount:tc.count,teamNames:tc.names,teamPoints:tc.points}}
