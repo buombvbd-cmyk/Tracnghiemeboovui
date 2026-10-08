@@ -428,7 +428,7 @@ qs=rows.map((r,rowIndex)=>{
   const img=embeddedImages[rowIndex+':2']||get('Hình ảnh câu hỏi','Hinh anh cau hoi')||get('Image');
   return {q:get('Câu hỏi','Cau hoi')||String(r.Question||''),img,opts,optImgs,ans:String(r['Đáp án đúng']??r['Dap an dung']??r.Answer??'').trim()};
 }).filter(x=>x.q||x.img||x.opts.some(Boolean)||x.optImgs.some(Boolean));
-$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=\`✅ Đã nhập \${qs.length} câu từ \${f.name}\`;preview()
+$('setName').value=f.name.replace(/\.(xlsx|xls)$/i,'');$('importStatus').textContent=`✅ Đã nhập ${qs.length} câu từ ${f.name}`;preview()
 }catch(e){console.error(e);$('importStatus').textContent='❌ Không đọc được file Excel/ảnh nhúng'}};r.readAsArrayBuffer(f)}
 function preview(){$('preview').innerHTML=qs.length?'<h3>👀 Xem trước</h3>'+qs.slice(0,8).map((q,n)=>`<div class="row"><b>${n+1}</b><span>${esc(q.q||'[Câu hỏi hình ảnh]')}</span><span>Đúng: <b>${esc(q.ans)}</b></span><span class="del">${q.img?'🖼️ Hình':''}</span></div>`).join('')+(qs.length>8?`<p class="muted">... và ${qs.length-8} câu khác</p>`:''):''}
 $('time').onchange=()=>$('custom').classList.toggle('hidden',$('time').value!=='custom');
