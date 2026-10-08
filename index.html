@@ -165,6 +165,7 @@ nav{height:72px;background:#ffffffee;border-bottom:1px solid var(--line);display
 </div>
 <script>
 
+const $=x=>document.getElementById(x);
 // ===== SUPABASE AUTH - QUIZ SCHOOL V2 =====
 const SUPABASE_URL = 'https://ssurmnldxfbxbcoclyey.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__CIEoUBwTfUEczwBmRdoRg_hMBaU_fo';
@@ -376,7 +377,8 @@ document.getElementById('teacherCreateForm')?.addEventListener('submit', createT
 initQuizAuth();
 
 let sets=JSON.parse(localStorage.getItem('quizSchoolSets')||'[]'),current=null,qs=[],idx=0,settings={},revealed=false,left=0,timer=null,ctx=null,audio=true,nextTimer=null,teamList=[],teamScores={},teamTurn=null,teamPointValue=10;
-const $=x=>document.getElementById(x),shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const $=x=>document.getElementById(x);
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 function home(){$('teacherPage').classList.add('hidden');$('playPage').classList.add('hidden');$('adminPage')?.classList.add('hidden');$('homePage').classList.remove('hidden');renderSets()}
 
 function setGameType(type){$('individualModeCard').classList.toggle('active',type==='individual');$('teamModeCard').classList.toggle('active',type==='team');$('teamSetup').classList.toggle('hidden',type!=='team');if(type==='team')renderTeamInputs()}
