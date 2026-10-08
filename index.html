@@ -359,9 +359,15 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
       return;
     }
 
-    // SIGNED_IN sẽ tự gọi showLoggedIn(). Không gọi lần 2 để tránh race.
     if(data?.user){
       msg.textContent='✅ Xác thực thành công, đang kiểm tra quyền...';
+      // Kiểm tra quyền trực tiếp sau khi đăng nhập, không phụ thuộc AUTH EVENT.
+      const ok=await showLoggedIn(data.user);
+      if(!ok){
+        btn.disabled=false;
+        btn.textContent='🔐 Đăng nhập';
+        return;
+      }
     }else{
       msg.textContent='❌ Không nhận được tài khoản sau khi đăng nhập.';
     }
