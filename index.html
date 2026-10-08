@@ -174,46 +174,74 @@ let authMessageLock = false;
 let authReady = false;
 
 async function showLoggedIn(user){
+  if(!user) return false;
   try{
-    const {data: profile, error} = await sb.from('profiles').select('id,full_name,role').eq('id', user.id).maybeSingle();
+    const {data: profile, error} = await sb.from('profiles')
+      .select('id,full_name,role')
+      .eq('id', user.id)
+      .maybeSingle();
+
     if(error){
       console.error('Lỗi đọc profiles:', error);
       authMessageLock = true;
-      $('authMsg').textContent='❌ Không đọc được quyền tài khoản. Vui lòng kiểm tra bảng profiles/RLS trong Supabase.';
       $('authGate').style.display='grid';
       $('app').style.display='none';
-      await sb.auth.signOut();
+      $('authMsg').textContent='❌ Đăng nhập thành công nhưng không đọc được quyền tài khoản. Mã lỗi: '+(error.message||'profiles');
       return false;
     }
+
     if(!profile){
       authMessageLock = true;
-      $('authMsg').textContent='❌ Tài khoản đăng nhập được nhưng chưa có hồ sơ trong bảng profiles.';
       $('authGate').style.display='grid';
       $('app').style.display='none';
-      await sb.auth.signOut();
+      $('authMsg').textContent='❌ Tài khoản chưa được cấp quyền trong hệ thống (thiếu hồ sơ profiles).';
       return false;
     }
+
+    if(profile.role!=='admin' && profile.role!=='teacher'){
+      authMessageLock = true;
+      $('authGate').style.display='grid';
+      $('app').style.display='none';
+      $('authMsg').textContent='❌ Quyền tài khoản không hợp lệ.';
+      return false;
+    }
+
     currentProfile = profile;
     authMessageLock = false;
-  $('authGate').style.display='none';
-  $('app').style.display='block';
-  authReady = true;
-  const navBtns = document.querySelector('.navBtns');
-  if(navBtns && !document.getElementById('userBadge')){
+    $('authGate').style.display='none';
+    $('app').style.display='block';
+    authReady = true;
+
+    const navBtns = document.querySelector('.navBtns');
+    if(navBtns && !document.getElementById('userBadge')){
       if(profile.role==='admin'){
         const adminBtn=document.createElement('button');
-        adminBtn.id='adminNavBtn'; adminBtn.className='btn primary'; adminBtn.textContent='👑 Quản trị';
+        adminBtn.id='adminNavBtn';
+        adminBtn.className='btn primary';
+        adminBtn.textContent='👑 Quản trị';
         adminBtn.onclick=openAdmin;
         navBtns.appendChild(adminBtn);
       }
-    const badge=document.createElement('span');
-    badge.id='userBadge'; badge.className='userBadge';
-    badge.textContent=(profile.role==='admin'?'👑 ADMIN':'👨‍🏫 GIÁO VIÊN');
-    navBtns.prepend(badge);
-    const out=document.createElement('button');
-    out.id='logoutBtn'; out.className='btn logoutBtn'; out.textContent='Đăng xuất';
-    out.onclick=logoutQuiz;
-    navBtns.appendChild(out);
+      const badge=document.createElement('span');
+      badge.id='userBadge';
+      badge.className='userBadge';
+      badge.textContent=(profile.role==='admin'?'👑 ADMIN':'👨‍🏫 GIÁO VIÊN');
+      navBtns.prepend(badge);
+      const out=document.createElement('button');
+      out.id='logoutBtn';
+      out.className='btn logoutBtn';
+      out.textContent='Đăng xuất';
+      out.onclick=logoutQuiz;
+      navBtns.appendChild(out);
+    }
+    return true;
+  }catch(err){
+    console.error('Lỗi showLoggedIn:',err);
+    authMessageLock = true;
+    $('authGate').style.display='grid';
+    $('app').style.display='none';
+    $('authMsg').textContent='❌ Có lỗi khi kiểm tra tài khoản: '+(err?.message||err);
+    return false;
   }
 }
 async function logoutQuiz(){
@@ -221,21 +249,26 @@ async function logoutQuiz(){
   location.reload();
 }
 async function initQuizAuth(){
-  const {data:{session}} = await sb.auth.getSession();
-  if(session?.user){
+  $('authGate').style.display='grid';
+  $('app').style.display='none';
+
+  const {data:{session},error} = await sb.auth.getSession();
+  if(error){
+    console.error('getSession error:',error);
+    $('authMsg').textContent='❌ Không khởi tạo được phiên đăng nhập: '+(error.message||error);
+  }else if(session?.user){
     await showLoggedIn(session.user);
-  }else{
-    $('authGate').style.display='grid';
-    $('app').style.display='none';
   }
+
   sb.auth.onAuthStateChange(async (event, session)=>{
+    console.log('AUTH EVENT:',event);
     if(event==='SIGNED_IN' && session?.user){
       await showLoggedIn(session.user);
     }else if(event==='SIGNED_OUT'){
-      if(authMessageLock) return;
+      currentProfile=null;
       $('app').style.display='none';
       $('authGate').style.display='grid';
-      if(!authReady) return;
+      if(!authMessageLock) $('authMsg').textContent='';
     }
   });
 }
@@ -308,24 +341,35 @@ async function createTeacherAccount(e){
 document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const btn=$('loginBtn'), msg=$('authMsg');
-  btn.disabled=true; btn.textContent='⏳ Đang đăng nhập...'; msg.textContent='';
-  const {data,error}=await sb.auth.signInWithPassword({
-    email:$('loginEmail').value.trim(),
-    password:$('loginPassword').value
-  });
-  if(error){
-    console.error('Lỗi đăng nhập Supabase:', error);
-    msg.textContent='❌ '+(error.message||'Email hoặc mật khẩu không đúng.');
-    btn.disabled=false; btn.textContent='🔐 Đăng nhập';
-    return;
-  }
-  const ok = await showLoggedIn(data.user);
-  if(ok===false){
+  const email=$('loginEmail').value.trim();
+  const password=$('loginPassword').value;
+  btn.disabled=true;
+  btn.textContent='⏳ Đang đăng nhập...';
+  msg.textContent='';
+
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error){
+      console.error('Lỗi đăng nhập Supabase:',error);
+      msg.textContent='❌ '+(error.message||'Email hoặc mật khẩu không đúng.');
+      btn.disabled=false;
+      btn.textContent='🔐 Đăng nhập';
+      return;
+    }
+
+    // SIGNED_IN sẽ tự gọi showLoggedIn(). Không gọi lần 2 để tránh race.
+    if(data?.user){
+      msg.textContent='✅ Xác thực thành công, đang kiểm tra quyền...';
+    }else{
+      msg.textContent='❌ Không nhận được tài khoản sau khi đăng nhập.';
+    }
+  }catch(err){
+    console.error('Lỗi submit login:',err);
+    msg.textContent='❌ '+(err?.message||'Không thể đăng nhập.');
+  }finally{
     btn.disabled=false;
     btn.textContent='🔐 Đăng nhập';
-    return;
   }
-  btn.disabled=false; btn.textContent='🔐 Đăng nhập';
 });
 document.getElementById('teacherCreateForm')?.addEventListener('submit', createTeacherAccount);
 initQuizAuth();
