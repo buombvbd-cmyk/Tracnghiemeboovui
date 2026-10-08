@@ -260,10 +260,11 @@ async function initQuizAuth(){
     await showLoggedIn(session.user);
   }
 
-  sb.auth.onAuthStateChange(async (event, session)=>{
+  sb.auth.onAuthStateChange((event, session)=>{
     console.log('AUTH EVENT:',event);
     if(event==='SIGNED_IN' && session?.user){
-      await showLoggedIn(session.user);
+      // Không await Supabase query trực tiếp bên trong auth callback để tránh khóa auth lock.
+      setTimeout(()=>showLoggedIn(session.user),0);
     }else if(event==='SIGNED_OUT'){
       currentProfile=null;
       $('app').style.display='none';
