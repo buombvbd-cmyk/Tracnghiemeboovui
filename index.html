@@ -170,17 +170,34 @@ const SUPABASE_URL = 'https://ssurmnldxfbxbcoclyey.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__CIEoUBwTfUEczwBmRdoRg_hMBaU_fo';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 let currentProfile = null;
+let authMessageLock = false;
+let authReady = false;
 
 async function showLoggedIn(user){
-  const {data: profile, error} = await sb.from('profiles').select('id,full_name,role').eq('id', user.id).maybeSingle();
-  if(error || !profile){
-    await sb.auth.signOut();
-    $('authMsg').textContent='Tài khoản chưa được cấp quyền sử dụng hệ thống.';
-    return;
-  }
-  currentProfile = profile;
+  try{
+    const {data: profile, error} = await sb.from('profiles').select('id,full_name,role').eq('id', user.id).maybeSingle();
+    if(error){
+      console.error('Lỗi đọc profiles:', error);
+      authMessageLock = true;
+      $('authMsg').textContent='❌ Không đọc được quyền tài khoản. Vui lòng kiểm tra bảng profiles/RLS trong Supabase.';
+      $('authGate').style.display='grid';
+      $('app').style.display='none';
+      await sb.auth.signOut();
+      return false;
+    }
+    if(!profile){
+      authMessageLock = true;
+      $('authMsg').textContent='❌ Tài khoản đăng nhập được nhưng chưa có hồ sơ trong bảng profiles.';
+      $('authGate').style.display='grid';
+      $('app').style.display='none';
+      await sb.auth.signOut();
+      return false;
+    }
+    currentProfile = profile;
+    authMessageLock = false;
   $('authGate').style.display='none';
   $('app').style.display='block';
+  authReady = true;
   const navBtns = document.querySelector('.navBtns');
   if(navBtns && !document.getElementById('userBadge')){
       if(profile.role==='admin'){
@@ -212,8 +229,14 @@ async function initQuizAuth(){
     $('app').style.display='none';
   }
   sb.auth.onAuthStateChange(async (event, session)=>{
-    if(event==='SIGNED_IN' && session?.user) await showLoggedIn(session.user);
-    if(event==='SIGNED_OUT') location.reload();
+    if(event==='SIGNED_IN' && session?.user){
+      await showLoggedIn(session.user);
+    }else if(event==='SIGNED_OUT'){
+      if(authMessageLock) return;
+      $('app').style.display='none';
+      $('authGate').style.display='grid';
+      if(!authReady) return;
+    }
   });
 }
 
@@ -291,11 +314,17 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
     password:$('loginPassword').value
   });
   if(error){
-    msg.textContent='❌ Email hoặc mật khẩu không đúng.';
+    console.error('Lỗi đăng nhập Supabase:', error);
+    msg.textContent='❌ '+(error.message||'Email hoặc mật khẩu không đúng.');
     btn.disabled=false; btn.textContent='🔐 Đăng nhập';
     return;
   }
-  await showLoggedIn(data.user);
+  const ok = await showLoggedIn(data.user);
+  if(ok===false){
+    btn.disabled=false;
+    btn.textContent='🔐 Đăng nhập';
+    return;
+  }
   btn.disabled=false; btn.textContent='🔐 Đăng nhập';
 });
 document.getElementById('teacherCreateForm')?.addEventListener('submit', createTeacherAccount);
